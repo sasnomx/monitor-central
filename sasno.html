@@ -1,673 +1,229 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<title>Monitor Sísmico SASNO</title>
-<link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-    }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
+  <meta charset="UTF-8" />
+  <title>Monitor Sísmico SASNO</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-messaging-compat.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+    #map { width: 100vw; height: 100vh; }
     #panel {
-      position: absolute;
-      bottom: 15px;
-      left: 15px;
-      background-color: black;
-      color: white;
-      width: 330px;
-      font-family: sans-serif;
-      font-size: 13px;
-      border: 2px solid white;
-      z-index: 9999;
+      position: absolute; bottom: 15px; left: 15px;
+      background-color: black; color: white;
+      width: 330px; font-family: sans-serif;
+      font-size: 13px; border: 2px solid white; z-index: 9999;
     }
-    .panel-section {
-      border-bottom: 3px solid white;
-      padding: 10px;
-    }
-    .title {
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .subtitle {
-      font-size: 14px;
-      text-align: center;
-      margin-top: 4px;
-    }
+    .panel-section { border-bottom: 3px solid white; padding: 10px; }
+    .title { font-size: 20px; font-weight: bold; text-align: center; }
+    .subtitle { font-size: 14px; text-align: center; margin-top: 4px; }
     .barra-verde {
-      background-color: #28a745;
-      color: white;
-      padding: 2px 10px;
-      font-weight: bold;
-      display: inline-block;
-      margin: 0 5px;
+      padding: 2px 10px; font-weight: bold;
+      display: inline-block; margin: 0 5px;
     }
     .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .footer .version {
-      font-size: 22px;
-      font-weight: bold;
-    }
+    .footer .version { font-size: 22px; font-weight: bold; }
     .footer .dot {
-      width: 20px;
-      height: 20px;
-      background-color: #28a745;
-      border-radius: 50%;
-      display: inline-block;
+      width: 20px; height: 20px;
+      background-color: #28a745; border-radius: 50%; display: inline-block;
     }
-    #menu-btn {
+    #activarNotificaciones {
       position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 40px;
-      height: 40px;
-      background: black;
-      color: white;
-      font-size: 28px;
-      text-align: center;
-      cursor: pointer;
+      top: 20px;
+      left: 20px;
+      z-index: 10000;
+      background: #000;
+      color: #fff;
+      padding: 10px 20px;
       border: 2px solid white;
-      z-index: 10000;
-      line-height: 34px;
-    }
-    #menu-options {
-      position: absolute;
-      top: 60px;
-      right: 15px;
-      background: white;
-      color: black;
-      font-family: sans-serif;
-      border: 1px solid gray;
-      z-index: 10000;
-      display: none;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-    }
-    #menu-options div {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #ccc;
-    }
-    #menu-options div:hover {
-      background-color: #eee;
-    }
-  </style>
-</head>
-<body><button id="activarNotificaciones">Activar Notificaciones</button>
-<div id="map"></div>
-<!-- Panel SASNO con INTENSIDAD -->
-<div id="panel">
-<div class="panel-section">
-<div class="title">SASNO</div>
-<div class="subtitle">Sistema de Alerta Sísmica de notificación oportuna</div>
-<div class="subtitle"><strong>Central CDMX</strong></div>
-</div>
-<div class="panel-section">
-<strong>Intensidad:</strong>
-<span class="barra-verde" style="background-color: orange;">FUERTE 🟠</span>
-</div>
-<div class="panel-section">
-<div style="text-align:center; font-size: 12px;">MONITOR VERSION CENTRAL</div>
-<div class="footer">
-<div class="version">VER. 1.0</div>
-<div class="dot"></div>
-</div>
-</div>
-</div>
-<!-- Menú de capas -->
-<div id="menu-btn">☰</div>
-<div id="menu-options">
-<div onclick="cambiarMapa('esri')">Esri Satelital</div>
-<div onclick="cambiarMapa('usgs')">USGS Imagery</div>
-<div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
-</div>
-<script>
-    const capas = {
-      esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri'
-      }),
-      usgs: L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        attribution: 'USGS'
-      }),
-      carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap & CARTO',
-        subdomains: 'abcd',
-        maxZoom: 20
-      })
-    };
-
-    const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capas.esri.addTo(map);
-
-    const centrales = [
-      { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
-      { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
-      { nombre: "Acapulco", coord: [16.8531, -99.8237] },
-      { nombre: "Chilpancingo", coord: [17.5506, -99.5058] },
-      { nombre: "Morelia", coord: [19.7008, -101.186] },
-      { nombre: "Puebla", coord: [19.0414, -98.2063] },
-      { nombre: "Colima", coord: [19.2433, -103.725] }
-    ];
-
-    function dibujarCentrales() {
-      centrales.forEach(c => {
-        L.circle(c.coord, {
-          radius: 10000,
-          color: '#002f6c',
-          fillColor: '#002f6c',
-          fillOpacity: 1,
-          weight: 2
-        }).addTo(map);
-      });
-    }
-
-    dibujarCentrales();
-
-    function cambiarMapa(nombre) {
-      map.eachLayer(layer => map.removeLayer(layer));
-      capas[nombre].addTo(map);
-      dibujarCentrales();
-      document.getElementById("menu-options").style.display = "none";
-    }
-
-    const btn = document.getElementById('menu-btn');
-    const opciones = document.getElementById('menu-options');
-    btn.onclick = () => opciones.style.display = opciones.style.display === 'block' ? 'none' : 'block';
-    window.onclick = e => {
-      if (!btn.contains(e.target) && !opciones.contains(e.target)) {
-        opciones.style.display = 'none';
-      }
-    };
-
-    function reproducirSonido(url) {
-      new Audio(url).play();
-    }
-
-    function crearOndaEpicentro(center, color, velocidad) {
-      const circulo = L.circle(center, {
-        radius: 0,
-        color,
-        weight: 2,
-        fillOpacity: 0,
-        fillColor: 'transparent'
-      }).addTo(map);
-
-      reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
-
-      let tiempoTranscurrido = 0;
-      const duracion = 120000;
-      const crecimiento = setInterval(() => {
-        tiempoTranscurrido += 100;
-        const nuevoRadio = (velocidad * tiempoTranscurrido) / 1000;
-        circulo.setRadius(nuevoRadio * 1000);
-        if (tiempoTranscurrido >= duracion) {
-          clearInterval(crecimiento);
-          map.removeLayer(circulo);
-        }
-      }, 100);
-    }
-
-    function animarCentral(center) {
-      const duracionTotal = 120000;
-      const intervalo = 3000;
-      let tiempo = 0;
-
-      const loop = setInterval(() => {
-        if (tiempo >= duracionTotal) {
-          clearInterval(loop);
-          return;
-        }
-
-        const radios = [15000, 30000, 45000, 60000];
-        radios.forEach((radio, i) => {
-          setTimeout(() => {
-            const onda = L.circle(center, {
-              radius: radio,
-              color: '#002f6c',
-              weight: 1.5,
-              fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(onda), 2500);
-          }, i * 300);
-        });
-
-        tiempo += intervalo;
-      }, intervalo);
-    }
-
-    function inicializarCirculosEpicentro(posicion) {
-      const config = [
-        { radio: 200000, relleno: false },
-        { radio: 150000, relleno: false },
-        { radio: 100000, relleno: false },
-        { radio: 50000, relleno: true }
-      ];
-      const circulos = [];
-
-      config.forEach(item => {
-        const circulo = L.circle(posicion, {
-          radius: item.radio,
-          color: 'gray',
-          weight: 1,
-          fillColor: 'gray',
-          fillOpacity: item.relleno ? 0.1 : 0
-        }).addTo(map);
-        circulos.push(circulo);
-      });
-
-      setTimeout(() => {
-        circulos.forEach(c => map.removeLayer(c));
-      }, 300000);
-    }
-
-    function mostrarEvento(lat, lng) {
-      const epicentro = L.latLng(lat, lng);
-      crearOndaEpicentro(epicentro, '#e5be01', 5); // S
-      crearOndaEpicentro(epicentro, '#800080', 8); // P
-      reproducirSonido("https://sasmex.net/mapa/audio/ecobeep.wav");
-
-      inicializarCirculosEpicentro(epicentro);
-      centrales.forEach(c => animarCentral(c.coord));
-    }
-
-    
-  </script>
-</body>
-</html> {
-  console.log("🔔 Alerta recibida:", payload);
-  const data = payload.data || {};
-  const estado = data.estado || "ADVISORY";
-  const lat = parseFloat(data.latitud || "0");
-  const lng = parseFloat(data.longitud || "0");
-  const tieneCoordenadas = !(isNaN(lat) || isNaN(lng) || (lat === 0 &amp;&amp; lng === 0));
-
-  // Funciones visuales
-  function reproducirSonido(nombre) {
-    const audio = new Audio("https://sasmex.net/mapa/audio/" + nombre);
-    audio.play();
-  }
-
-  function dibujarEpicentro() {
-    L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(map);
-  }
-
-  function crearOnda(center, color, velocidad) {
-    const circulo = L.circle(center, {
-      radius: 0,
-      color,
-      weight: 2,
-      fillOpacity: 0
-    }).addTo(map);
-    let tiempo = 0;
-    const duracion = 120000;
-    const intervalo = setInterval(() =&gt; {
-      tiempo += 100;
-      const nuevoRadio = (velocidad * tiempo) / 1000;
-      circulo.setRadius(nuevoRadio * 1000);
-      if (tiempo &gt;= duracion) {
-        clearInterval(intervalo);
-        map.removeLayer(circulo);
-      }
-    }, 100);
-  }
-
-  function dibujarCirculosEpicentro() {
-    const radios = [200000, 150000, 100000, 50000];
-    radios.forEach((r, i) =&gt; {
-      const c = L.circle([lat, lng], {
-        radius: r,
-        color: "gray",
-        weight: 1,
-        fillColor: "gray",
-        fillOpacity: r === 50000 ? 0.1 : 0
-      }).addTo(map);
-      setTimeout(() =&gt; map.removeLayer(c), 300000);
-    });
-  }
-
-  // Panel
-  const el = document.getElementById("intensidad");
-  if (estado === "WARNING") {
-    el.innerText = "FUERTE 🟠";
-    el.style.backgroundColor = "orange";
-    el.style.color = "white";
-    reproducirSonido("ecobeep.wav");
-    if (tieneCoordenadas) {
-      dibujarEpicentro();
-      crearOnda([lat, lng], "#e5be01", 5); // S
-      crearOnda([lat, lng], "#800080", 8); // P
-      dibujarCirculosEpicentro();
-    }
-    animarCentrales();
-  } else if (estado === "ADVISORY") {
-    el.innerText = "LIGERO 🟡";
-    el.style.backgroundColor = "yellow";
-    el.style.color = "black";
-    reproducirSonido("ecobeep.wav");
-    dibujarEpicentro();
-    crearOnda([lat, lng], "#e5be01", 5); // S
-    crearOnda([lat, lng], "#800080", 8); // P
-    dibujarCirculosEpicentro();
-  }
-});
-DOCTYPE html&gt;
-<html lang="es">
-<head>
-<meta charset="utf-8"/>
-<title>Monitor Sísmico SASNO</title>
-<link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-    }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
-    #panel {
-      position: absolute;
-      bottom: 15px;
-      left: 15px;
-      background-color: black;
-      color: white;
-      width: 330px;
-      font-family: sans-serif;
-      font-size: 13px;
-      border: 2px solid white;
-      z-index: 9999;
-    }
-    .panel-section {
-      border-bottom: 3px solid white;
-      padding: 10px;
-    }
-    .title {
-      font-size: 20px;
       font-weight: bold;
-      text-align: center;
-    }
-    .subtitle {
-      font-size: 14px;
-      text-align: center;
-      margin-top: 4px;
-    }
-    .barra-verde {
-      background-color: #28a745;
-      color: white;
-      padding: 2px 10px;
-      font-weight: bold;
-      display: inline-block;
-      margin: 0 5px;
-    }
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .footer .version {
-      font-size: 22px;
-      font-weight: bold;
-    }
-    .footer .dot {
-      width: 20px;
-      height: 20px;
-      background-color: #28a745;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    #menu-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 40px;
-      height: 40px;
-      background: black;
-      color: white;
-      font-size: 28px;
-      text-align: center;
       cursor: pointer;
-      border: 2px solid white;
-      z-index: 10000;
-      line-height: 34px;
-    }
-    #menu-options {
-      position: absolute;
-      top: 60px;
-      right: 15px;
-      background: white;
-      color: black;
-      font-family: sans-serif;
-      border: 1px solid gray;
-      z-index: 10000;
-      display: none;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-    }
-    #menu-options div {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #ccc;
-    }
-    #menu-options div:hover {
-      background-color: #eee;
     }
   </style>
 </head>
 <body>
-<div id="map"></div>
-<!-- Panel SASNO con INTENSIDAD -->
-<div id="panel">
-<div class="panel-section">
-<div class="title">SASNO</div>
-<div class="subtitle">Sistema de Alerta Sísmica de notificación oportuna</div>
-<div class="subtitle"><strong>Central CDMX</strong></div>
-</div>
-<div class="panel-section">
-<strong>Intensidad:</strong>
-<span class="barra-verde" style="background-color: orange;">FUERTE 🟠</span>
-</div>
-<div class="panel-section">
-<div style="text-align:center; font-size: 12px;">MONITOR VERSION CENTRAL</div>
-<div class="footer">
-<div class="version">VER. 1.0</div>
-<div class="dot"></div>
-</div>
-</div>
-</div>
-<!-- Menú de capas -->
-<div id="menu-btn">☰</div>
-<div id="menu-options">
-<div onclick="cambiarMapa('esri')">Esri Satelital</div>
-<div onclick="cambiarMapa('usgs')">USGS Imagery</div>
-<div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
-</div>
-<script>
-    const capas = {
-      esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri'
-      }),
-      usgs: L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        attribution: 'USGS'
-      }),
-      carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap & CARTO',
-        subdomains: 'abcd',
-        maxZoom: 20
-      })
-    };
+  <div id="map"></div>
 
+  <div id="panel">
+    <div class="panel-section">
+      <div class="title">SASNO</div>
+      <div class="subtitle">Sistema de Alerta Sísmica de notificación oportuna</div>
+      <div class="subtitle"><strong>Central CDMX</strong></div>
+    </div>
+    <div class="panel-section">
+      <strong>Intensidad:</strong>
+      <span id="intensidad" class="barra-verde"></span>
+    </div>
+    <div class="panel-section">
+      <div style="text-align:center; font-size: 12px;">MONITOR VERSION CENTRAL</div>
+      <div class="footer">
+        <div class="version">VER. 1.0</div>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="activarNotificaciones">Activar Notificaciones</button>
+
+  <script>
     const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capas.esri.addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri'
+    }).addTo(map);
 
     const centrales = [
-      { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
-      { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
-      { nombre: "Acapulco", coord: [16.8531, -99.8237] },
-      { nombre: "Chilpancingo", coord: [17.5506, -99.5058] },
-      { nombre: "Morelia", coord: [19.7008, -101.186] },
-      { nombre: "Puebla", coord: [19.0414, -98.2063] },
-      { nombre: "Colima", coord: [19.2433, -103.725] }
+      [19.4326, -99.1332], [17.0732, -96.7266], [16.8531, -99.8237],
+      [17.5506, -99.5058], [19.7008, -101.186], [19.0414, -98.2063],
+      [19.2433, -103.725]
     ];
 
-    function dibujarCentrales() {
-      centrales.forEach(c => {
-        L.circle(c.coord, {
-          radius: 10000,
-          color: '#002f6c',
-          fillColor: '#002f6c',
-          fillOpacity: 1,
-          weight: 2
-        }).addTo(map);
+    function animarCentrales() {
+      centrales.forEach(coord => {
+        const duracionTotal = 120000;
+        const intervalo = 3000;
+        let tiempo = 0;
+        const loop = setInterval(() => {
+          if (tiempo >= duracionTotal) return clearInterval(loop);
+          const radios = [15000, 30000, 45000, 60000];
+          radios.forEach((radio, i) => {
+            setTimeout(() => {
+              const onda = L.circle(coord, {
+                radius: radio, color: '#002f6c', weight: 1.5, fillOpacity: 0
+              }).addTo(map);
+              setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+          });
+          tiempo += intervalo;
+        }, intervalo);
       });
     }
 
-    dibujarCentrales();
-
-    function cambiarMapa(nombre) {
-      map.eachLayer(layer => map.removeLayer(layer));
-      capas[nombre].addTo(map);
-      dibujarCentrales();
-      document.getElementById("menu-options").style.display = "none";
-    }
-
-    const btn = document.getElementById('menu-btn');
-    const opciones = document.getElementById('menu-options');
-    btn.onclick = () => opciones.style.display = opciones.style.display === 'block' ? 'none' : 'block';
-    window.onclick = e => {
-      if (!btn.contains(e.target) && !opciones.contains(e.target)) {
-        opciones.style.display = 'none';
-      }
-    };
-
-    function reproducirSonido(url) {
-      new Audio(url).play();
-    }
-
-    function crearOndaEpicentro(center, color, velocidad) {
-      const circulo = L.circle(center, {
+    function crearOnda(center, color, velocidad) {
+      const onda = L.circle(center, {
         radius: 0,
-        color,
+        color: color,
         weight: 2,
-        fillOpacity: 0,
-        fillColor: 'transparent'
+        fillOpacity: 0
       }).addTo(map);
-
-      reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
-
-      let tiempoTranscurrido = 0;
+      let tiempo = 0;
       const duracion = 120000;
-      const crecimiento = setInterval(() => {
-        tiempoTranscurrido += 100;
-        const nuevoRadio = (velocidad * tiempoTranscurrido) / 1000;
-        circulo.setRadius(nuevoRadio * 1000);
-        if (tiempoTranscurrido >= duracion) {
-          clearInterval(crecimiento);
-          map.removeLayer(circulo);
+      const intervalo = setInterval(() => {
+        tiempo += 100;
+        const radio = (velocidad * tiempo) / 1000;
+        onda.setRadius(radio * 1000);
+        if (tiempo >= duracion) {
+          clearInterval(intervalo);
+          map.removeLayer(onda);
         }
       }, 100);
     }
 
-    function animarCentral(center) {
-      const duracionTotal = 120000;
-      const intervalo = 3000;
-      let tiempo = 0;
-
-      const loop = setInterval(() => {
-        if (tiempo >= duracionTotal) {
-          clearInterval(loop);
-          return;
-        }
-
-        const radios = [15000, 30000, 45000, 60000];
-        radios.forEach((radio, i) => {
-          setTimeout(() => {
-            const onda = L.circle(center, {
-              radius: radio,
-              color: '#002f6c',
-              weight: 1.5,
-              fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(onda), 2500);
-          }, i * 300);
-        });
-
-        tiempo += intervalo;
-      }, intervalo);
-    }
-
-    function inicializarCirculosEpicentro(posicion) {
-      const config = [
-        { radio: 200000, relleno: false },
-        { radio: 150000, relleno: false },
-        { radio: 100000, relleno: false },
-        { radio: 50000, relleno: true }
-      ];
-      const circulos = [];
-
-      config.forEach(item => {
-        const circulo = L.circle(posicion, {
-          radius: item.radio,
+    function dibujarCirculosEpicentro(center) {
+      const radios = [200000, 150000, 100000, 50000];
+      radios.forEach(r => {
+        const c = L.circle(center, {
+          radius: r,
           color: 'gray',
           weight: 1,
           fillColor: 'gray',
-          fillOpacity: item.relleno ? 0.1 : 0
+          fillOpacity: r === 50000 ? 0.1 : 0
         }).addTo(map);
-        circulos.push(circulo);
+        setTimeout(() => map.removeLayer(c), 300000);
       });
-
-      setTimeout(() => {
-        circulos.forEach(c => map.removeLayer(c));
-      }, 300000);
     }
 
-    function mostrarEvento(lat, lng) {
-      const epicentro = L.latLng(lat, lng);
-      crearOndaEpicentro(epicentro, '#e5be01', 5); // S
-      crearOndaEpicentro(epicentro, '#800080', 8); // P
-      reproducirSonido("https://sasmex.net/mapa/audio/ecobeep.wav");
-
-      inicializarCirculosEpicentro(epicentro);
-      centrales.forEach(c => animarCentral(c.coord));
+    function reproducirSonido(nombre) {
+      const audio = new Audio("https://sasmex.net/mapa/audio/" + nombre);
+      audio.play();
     }
 
-    
-  
+    function actualizarIntensidad(tipo) {
+      const el = document.getElementById("intensidad");
+      if (tipo === "WARNING") {
+        el.innerText = "FUERTE 🟠";
+        el.style.backgroundColor = "orange";
+        el.style.color = "white";
+      } else if (tipo === "ADVISORY") {
+        el.innerText = "LIGERO 🟢";
+        el.style.backgroundColor = "green";
+        el.style.color = "white";
+      }
+    }
 
-document.getElementById("activarNotificaciones").onclick = () => {
-  Notification.requestPermission().then(permission => {
-    if (permission === "granted") {
-      messaging.getToken({
-        vapidKey: "BGUpy2aSSE3VOYNQusqStdW2yMvyLlElh4XovBDWTU7dIM578aYLxkCSRpBGFo-N1fYjOJzluOFxFdrQwAmhIUg"
-      }).then(token => {
-        console.log("✅ Token FCM:", token);
-        alert("Suscrito a EQW y LOWINTENSITYQUAKES.");
-        // Puedes llamar a tu backend aquí si quieres registrar el token
-      }).catch(err => {
-        console.error("❌ Error al obtener token:", err);
-        alert("Error al obtener token FCM.");
+    // === Firebase Configuración ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4nqBYRE79R_rWlpE5cqClBtA_-zx4-5I",
+      authDomain: "sasno-d79e1.firebaseapp.com",
+      projectId: "sasno-d79e1",
+      storageBucket: "sasno-d79e1.appspot.com",
+      messagingSenderId: "273171190720",
+      appId: "1:273171190720:web:68cc939db4a2e74c5c2e25"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    navigator.serviceWorker.register('firebase-messaging-sw.js').then(() => {
+      console.log("✅ Service Worker registrado");
+    }).catch(err => {
+      console.error("❌ Error al registrar Service Worker:", err);
+    });
+
+    document.getElementById("activarNotificaciones").onclick = () => {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          messaging.getToken({
+            vapidKey: "BGUpy2aSSE3VOYNQusqStdW2yMvyLlElh4XovBDWTU7dIM578aYLxkCSRpBGFo-N1fYjOJzluOFxFdrQwAmhIUg"
+          }).then(token => {
+            console.log("✅ Token FCM:", token);
+            alert("Suscrito a EQW y LOWINTENSITYQUAKES.");
+          }).catch(err => {
+            console.error("❌ Error al obtener token:", err);
+            alert("Error al obtener token FCM.");
+          });
+        } else {
+          alert("Permiso denegado.");
+        }
       });
-    } else {
-      alert("Permiso denegado.");
-    }
-  });
-};
-</script>
+    };
+
+    messaging.onMessage(payload => {
+      console.log("🔔 Alerta recibida:", payload);
+      const data = payload.data || {};
+      const estado = data.estado || "ADVISORY";
+      const lat = parseFloat(data.latitud || "0");
+      const lng = parseFloat(data.longitud || "0");
+      const sonido = data.sonido || "ecobeep.wav";
+      const tieneCoords = lat && lng;
+
+      actualizarIntensidad(estado);
+
+      if (estado === "WARNING") {
+        reproducirSonido(sonido);
+        if (tieneCoords) {
+          const center = [lat, lng];
+          crearOnda(center, "#e5be01", 5); // S
+          crearOnda(center, "#800080", 8); // P
+          dibujarCirculosEpicentro(center);
+        }
+        animarCentrales();
+      }
+
+      if (estado === "ADVISORY") {
+        reproducirSonido(sonido);
+        const center = [lat, lng];
+        crearOnda(center, "#e5be01", 5); // S
+        crearOnda(center, "#800080", 8); // P
+        dibujarCirculosEpicentro(center);
+      }
+
+      if (tieneCoords) {
+        L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(map);
+      }
+    });
+  </script>
 </body>
 </html>
