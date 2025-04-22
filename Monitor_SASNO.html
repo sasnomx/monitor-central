@@ -35,6 +35,21 @@
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    // Dibujar círculos azules en centrales
+    const centrales = [
+      [19.4326, -99.1332], [17.0732, -96.7266], [16.8531, -99.8237],
+      [17.5506, -99.5058], [19.7008, -101.186], [19.0414, -98.2063],
+      [19.2433, -103.725]
+    ];
+    centrales.forEach(coord => {
+      L.circle(coord, {
+        radius: 10000,
+        color: 'blue',
+        fillColor: 'blue',
+        fillOpacity: 0.5
+      }).addTo(map);
+    });
+
     function actualizarIntensidad(tipo) {
       const el = document.getElementById("intensidad");
       if (tipo === "WARNING") {
@@ -46,6 +61,61 @@
 
     function reproducirSonido(nombre) {
       new Audio("https://sasmex.net/mapa/audio/" + nombre).play();
+    }
+
+    function crearOnda(center, color, velocidad) {
+      const onda = L.circle(center, {
+        radius: 0,
+        color: color,
+        weight: 2,
+        fillOpacity: 0
+      }).addTo(map);
+      let tiempo = 0;
+      const duracion = 120000;
+      const intervalo = setInterval(() => {
+        tiempo += 100;
+        const radio = (velocidad * tiempo) / 1000;
+        onda.setRadius(radio * 1000);
+        if (tiempo >= duracion) {
+          clearInterval(intervalo);
+          map.removeLayer(onda);
+        }
+      }, 100);
+    }
+
+    function dibujarCirculosEpicentro(center) {
+      const radios = [200000, 150000, 100000, 50000];
+      radios.forEach(r => {
+        const c = L.circle(center, {
+          radius: r,
+          color: 'gray',
+          weight: 1,
+          fillColor: 'gray',
+          fillOpacity: r === 50000 ? 0.1 : 0
+        }).addTo(map);
+        setTimeout(() => map.removeLayer(c), 300000);
+      });
+    }
+
+    function animarCentrales() {
+      centrales.forEach(coord => {
+        const duracionTotal = 120000;
+        const intervalo = 3000;
+        let tiempo = 0;
+        const loop = setInterval(() => {
+          if (tiempo >= duracionTotal) return clearInterval(loop);
+          const radios = [15000, 30000, 45000, 60000];
+          radios.forEach((radio, i) => {
+            setTimeout(() => {
+              const onda = L.circle(coord, {
+                radius: radio, color: '#002f6c', weight: 1.5, fillOpacity: 0
+              }).addTo(map);
+              setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+          });
+          tiempo += intervalo;
+        }, intervalo);
+      });
     }
 
     const firebaseConfig = {
@@ -87,124 +157,6 @@
       actualizarIntensidad(estado);
       if (estado === "WARNING") {
         reproducirSonido("ecobeep.wav");
-      } else if (estado === "ADVISORY") {
-        reproducirSonido("ecobeep.wav");
-      }
-
-      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-        L.circle([lat, lng], { radius: 10000, color: 'red' }).addTo(map);
-      }
-    });
-  </script>
-</body>
-</html>
-
-
-    function crearOnda(center, color, velocidad) {
-      const onda = L.circle(center, {
-        radius: 0,
-        color: color,
-        weight: 2,
-        fillOpacity: 0
-      }).addTo(map);
-      let tiempo = 0;
-      const duracion = 120000;
-      const intervalo = setInterval(() => {
-        tiempo += 100;
-        const radio = (velocidad * tiempo) / 1000;
-        onda.setRadius(radio * 1000);
-        if (tiempo >= duracion) {
-          clearInterval(intervalo);
-          map.removeLayer(onda);
-        }
-      }, 100);
-    }
-
-    function dibujarCirculosEpicentro(center) {
-      const radios = [200000, 150000, 100000, 50000];
-      radios.forEach(r => {
-        const c = L.circle(center, {
-          radius: r,
-          color: 'gray',
-          weight: 1,
-          fillColor: 'gray',
-          fillOpacity: r === 50000 ? 0.1 : 0
-        }).addTo(map);
-        setTimeout(() => map.removeLayer(c), 300000);
-      });
-    }
-
-    // Modificación del onMessage para incluir ondas y círculos
-    messaging.onMessage(payload => {
-      const data = payload.data || {};
-      const estado = data.estado || "ADVISORY";
-      const lat = parseFloat(data.latitud || "0");
-      const lng = parseFloat(data.longitud || "0");
-
-      actualizarIntensidad(estado);
-      if (estado === "WARNING") {
-        reproducirSonido("ecobeep.wav");
-      } else if (estado === "ADVISORY") {
-        reproducirSonido("ecobeep.wav");
-      }
-
-      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-        const center = [lat, lng];
-        L.circle(center, { radius: 10000, color: 'red' }).addTo(map);
-        crearOnda(center, "#e5be01", 5); // S
-        crearOnda(center, "#800080", 8); // P
-        dibujarCirculosEpicentro(center);
-      }
-    });
-
-
-    const centrales = [
-      [19.4326, -99.1332], [17.0732, -96.7266], [16.8531, -99.8237],
-      [17.5506, -99.5058], [19.7008, -101.186], [19.0414, -98.2063],
-      [19.2433, -103.725]
-    ];
-
-    function animarCentrales() {
-      centrales.forEach(coord => {
-        const duracionTotal = 120000;
-        const intervalo = 3000;
-        let tiempo = 0;
-        const loop = setInterval(() => {
-          if (tiempo >= duracionTotal) return clearInterval(loop);
-          const radios = [15000, 30000, 45000, 60000];
-          radios.forEach((radio, i) => {
-            setTimeout(() => {
-              const onda = L.circle(coord, {
-                radius: radio, color: '#002f6c', weight: 1.5, fillOpacity: 0
-              }).addTo(map);
-              setTimeout(() => map.removeLayer(onda), 2500);
-            }, i * 300);
-          });
-          tiempo += intervalo;
-        }, intervalo);
-      });
-    }
-
-    // Añadir visual inicial de las centrales
-    centrales.forEach(coord => {
-      L.circle(coord, {
-        radius: 10000,
-        color: 'blue',
-        fillColor: 'blue',
-        fillOpacity: 0.5
-      }).addTo(map);
-    });
-
-    // Actualizar onMessage para animar centrales si es WARNING
-    messaging.onMessage(payload => {
-      const data = payload.data || {};
-      const estado = data.estado || "ADVISORY";
-      const lat = parseFloat(data.latitud || "0");
-      const lng = parseFloat(data.longitud || "0");
-
-      actualizarIntensidad(estado);
-      if (estado === "WARNING") {
-        reproducirSonido("ecobeep.wav");
         animarCentrales();
       } else if (estado === "ADVISORY") {
         reproducirSonido("ecobeep.wav");
@@ -218,3 +170,6 @@
         dibujarCirculosEpicentro(center);
       }
     });
+  </script>
+</body>
+</html>
