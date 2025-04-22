@@ -98,3 +98,61 @@
   </script>
 </body>
 </html>
+
+
+    function crearOnda(center, color, velocidad) {
+      const onda = L.circle(center, {
+        radius: 0,
+        color: color,
+        weight: 2,
+        fillOpacity: 0
+      }).addTo(map);
+      let tiempo = 0;
+      const duracion = 120000;
+      const intervalo = setInterval(() => {
+        tiempo += 100;
+        const radio = (velocidad * tiempo) / 1000;
+        onda.setRadius(radio * 1000);
+        if (tiempo >= duracion) {
+          clearInterval(intervalo);
+          map.removeLayer(onda);
+        }
+      }, 100);
+    }
+
+    function dibujarCirculosEpicentro(center) {
+      const radios = [200000, 150000, 100000, 50000];
+      radios.forEach(r => {
+        const c = L.circle(center, {
+          radius: r,
+          color: 'gray',
+          weight: 1,
+          fillColor: 'gray',
+          fillOpacity: r === 50000 ? 0.1 : 0
+        }).addTo(map);
+        setTimeout(() => map.removeLayer(c), 300000);
+      });
+    }
+
+    // Modificación del onMessage para incluir ondas y círculos
+    messaging.onMessage(payload => {
+      const data = payload.data || {};
+      const estado = data.estado || "ADVISORY";
+      const lat = parseFloat(data.latitud || "0");
+      const lng = parseFloat(data.longitud || "0");
+
+      actualizarIntensidad(estado);
+      if (estado === "WARNING") {
+        reproducirSonido("ecobeep.wav");
+      } else if (estado === "ADVISORY") {
+        reproducirSonido("ecobeep.wav");
+      }
+
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        const center = [lat, lng];
+        L.circle(center, { radius: 10000, color: 'red' }).addTo(map);
+        crearOnda(center, "#e5be01", 5); // S
+        crearOnda(center, "#800080", 8); // P
+        dibujarCirculosEpicentro(center);
+      }
+    });
