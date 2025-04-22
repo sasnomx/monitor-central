@@ -131,7 +131,16 @@
       appId: "1:273171190720:web:68cc939db4a2e74c5c2e25"
     };
     firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
+const messaging = firebase.messaging();
+
+// REGISTRO DEL SERVICE WORKER CON RUTA CORRECTA EN SUBCARPETA
+navigator.serviceWorker.register('/monitor-central/firebase-messaging-sw.js')
+  .then((registration) => {
+    messaging.useServiceWorker(registration);
+    console.log("✅ Service Worker registrado desde subcarpeta /monitor-central");
+  }).catch((err) => {
+    console.error("❌ Error al registrar el Service Worker:", err);
+  });
 
     document.getElementById("activarNotificaciones").onclick = () => {
       messaging.getToken({
