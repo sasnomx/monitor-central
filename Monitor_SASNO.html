@@ -156,3 +156,65 @@
         dibujarCirculosEpicentro(center);
       }
     });
+
+
+    const centrales = [
+      [19.4326, -99.1332], [17.0732, -96.7266], [16.8531, -99.8237],
+      [17.5506, -99.5058], [19.7008, -101.186], [19.0414, -98.2063],
+      [19.2433, -103.725]
+    ];
+
+    function animarCentrales() {
+      centrales.forEach(coord => {
+        const duracionTotal = 120000;
+        const intervalo = 3000;
+        let tiempo = 0;
+        const loop = setInterval(() => {
+          if (tiempo >= duracionTotal) return clearInterval(loop);
+          const radios = [15000, 30000, 45000, 60000];
+          radios.forEach((radio, i) => {
+            setTimeout(() => {
+              const onda = L.circle(coord, {
+                radius: radio, color: '#002f6c', weight: 1.5, fillOpacity: 0
+              }).addTo(map);
+              setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+          });
+          tiempo += intervalo;
+        }, intervalo);
+      });
+    }
+
+    // Añadir visual inicial de las centrales
+    centrales.forEach(coord => {
+      L.circle(coord, {
+        radius: 10000,
+        color: 'blue',
+        fillColor: 'blue',
+        fillOpacity: 0.5
+      }).addTo(map);
+    });
+
+    // Actualizar onMessage para animar centrales si es WARNING
+    messaging.onMessage(payload => {
+      const data = payload.data || {};
+      const estado = data.estado || "ADVISORY";
+      const lat = parseFloat(data.latitud || "0");
+      const lng = parseFloat(data.longitud || "0");
+
+      actualizarIntensidad(estado);
+      if (estado === "WARNING") {
+        reproducirSonido("ecobeep.wav");
+        animarCentrales();
+      } else if (estado === "ADVISORY") {
+        reproducirSonido("ecobeep.wav");
+      }
+
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        const center = [lat, lng];
+        L.circle(center, { radius: 10000, color: 'red' }).addTo(map);
+        crearOnda(center, "#e5be01", 5);
+        crearOnda(center, "#800080", 8);
+        dibujarCirculosEpicentro(center);
+      }
+    });
