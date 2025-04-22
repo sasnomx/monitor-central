@@ -14,7 +14,7 @@
       width: 100%;
       overflow: hidden;
     }
-    #map {
+    #mapaSismo {
       width: 100vw;
       height: 100vh;
     }
@@ -68,7 +68,7 @@
       border-radius: 50%;
       display: inline-block;
     }
-    #menu-btn {
+    #menu-btnMenu {
       position: absolute;
       top: 15px;
       right: 15px;
@@ -106,7 +106,7 @@
   </style>
 </head>
 <body><button id="activarNotificaciones">Activar Notificaciones</button>
-<div id="map"></div>
+<div id="mapaSismo"></div>
 <!-- Panel SASNO con INTENSIDAD -->
 <div id="panel">
 <div class="panel-section">
@@ -126,15 +126,15 @@
 </div>
 </div>
 </div>
-<!-- Menú de capas -->
-<div id="menu-btn">☰</div>
+<!-- Menú de capasMapa -->
+<div id="menu-btnMenu">☰</div>
 <div id="menu-options">
 <div onclick="cambiarMapa('esri')">Esri Satelital</div>
 <div onclick="cambiarMapa('usgs')">USGS Imagery</div>
 <div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
 </div>
 <script>
-    const capas = {
+    const capasMapa = {
       esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri'
       }),
@@ -149,10 +149,10 @@
       })
     };
 
-    const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capas.esri.addTo(map);
+    const mapaSismo = L.mapaSismo('mapaSismo', { zoomControl: false }).setView([19.3, -99.2], 7);
+    capasMapa.esri.addTo(mapaSismo);
 
-    const centrales = [
+    const centralesSismo = [
       { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
       { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
       { nombre: "Acapulco", coord: [16.8531, -99.8237] },
@@ -163,32 +163,32 @@
     ];
 
     function dibujarCentrales() {
-      centrales.forEach(c => {
+      centralesSismo.forEach(c => {
         L.circle(c.coord, {
           radius: 10000,
           color: '#002f6c',
           fillColor: '#002f6c',
           fillOpacity: 1,
           weight: 2
-        }).addTo(map);
+        }).addTo(mapaSismo);
       });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
-      map.eachLayer(layer => map.removeLayer(layer));
-      capas[nombre].addTo(map);
+      mapaSismo.eachLayer(layer => mapaSismo.removeLayer(layer));
+      capasMapa[nombre].addTo(mapaSismo);
       dibujarCentrales();
       document.getElementById("menu-options").style.display = "none";
     }
 
-    const btn = document.getElementById('menu-btn');
-    const opciones = document.getElementById('menu-options');
-    btn.onclick = () => opciones.style.display = opciones.style.display === 'block' ? 'none' : 'block';
+    const btnMenu = document.getElementById('menu-btnMenu');
+    const opcionesMenu = document.getElementById('menu-options');
+    btnMenu.onclick = () => opcionesMenu.style.display = opcionesMenu.style.display === 'block' ? 'none' : 'block';
     window.onclick = e => {
-      if (!btn.contains(e.target) && !opciones.contains(e.target)) {
-        opciones.style.display = 'none';
+      if (!btnMenu.contains(e.target) && !opcionesMenu.contains(e.target)) {
+        opcionesMenu.style.display = 'none';
       }
     };
 
@@ -197,90 +197,90 @@
     }
 
     function crearOndaEpicentro(center, color, velocidad) {
-      const circulo = L.circle(center, {
+      const circuloOnda = L.circle(center, {
         radius: 0,
         color,
         weight: 2,
         fillOpacity: 0,
         fillColor: 'transparent'
-      }).addTo(map);
+      }).addTo(mapaSismo);
 
       reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
 
       let tiempoTranscurrido = 0;
-      const duracion = 120000;
-      const crecimiento = setInterval(() => {
+      const duracionOnda = 120000;
+      const crecimientoOnda = setInterval(() => {
         tiempoTranscurrido += 100;
-        const nuevoRadio = (velocidad * tiempoTranscurrido) / 1000;
-        circulo.setRadius(nuevoRadio * 1000);
-        if (tiempoTranscurrido >= duracion) {
-          clearInterval(crecimiento);
-          map.removeLayer(circulo);
+        const radioAnimado = (velocidad * tiempoTranscurrido) / 1000;
+        circuloOnda.setRadius(radioAnimado * 1000);
+        if (tiempoTranscurrido >= duracionOnda) {
+          clearInterval(crecimientoOnda);
+          mapaSismo.removeLayer(circuloOnda);
         }
       }, 100);
     }
 
     function animarCentral(center) {
-      const duracionTotal = 120000;
-      const intervalo = 3000;
+      const duracionCentrales = 120000;
+      const intervaloCentrales = 3000;
       let tiempo = 0;
 
-      const loop = setInterval(() => {
-        if (tiempo >= duracionTotal) {
-          clearInterval(loop);
+      const loopCentral = setInterval(() => {
+        if (tiempo >= duracionCentrales) {
+          clearInterval(loopCentral);
           return;
         }
 
-        const radios = [15000, 30000, 45000, 60000];
-        radios.forEach((radio, i) => {
+        const radiosCentrales = [15000, 30000, 45000, 60000];
+        radiosCentrales.forEach((radio, i) => {
           setTimeout(() => {
-            const onda = L.circle(center, {
+            const ondaCentral = L.circle(center, {
               radius: radio,
               color: '#002f6c',
               weight: 1.5,
               fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(onda), 2500);
+            }).addTo(mapaSismo);
+            setTimeout(() => mapaSismo.removeLayer(ondaCentral), 2500);
           }, i * 300);
         });
 
-        tiempo += intervalo;
-      }, intervalo);
+        tiempo += intervaloCentrales;
+      }, intervaloCentrales);
     }
 
     function inicializarCirculosEpicentro(posicion) {
-      const config = [
+      const configCirculos = [
         { radio: 200000, relleno: false },
         { radio: 150000, relleno: false },
         { radio: 100000, relleno: false },
         { radio: 50000, relleno: true }
       ];
-      const circulos = [];
+      const circulosEpicentro = [];
 
-      config.forEach(item => {
-        const circulo = L.circle(posicion, {
+      configCirculos.forEach(item => {
+        const circuloOnda = L.circle(posicion, {
           radius: item.radio,
           color: 'gray',
           weight: 1,
           fillColor: 'gray',
           fillOpacity: item.relleno ? 0.1 : 0
-        }).addTo(map);
-        circulos.push(circulo);
+        }).addTo(mapaSismo);
+        circulosEpicentro.push(circuloOnda);
       });
 
       setTimeout(() => {
-        circulos.forEach(c => map.removeLayer(c));
+        circulosEpicentro.forEach(c => mapaSismo.removeLayer(c));
       }, 300000);
     }
 
     function mostrarEvento(lat, lng) {
-      const epicentro = L.latLng(lat, lng);
-      crearOndaEpicentro(epicentro, '#e5be01', 5); // S
-      crearOndaEpicentro(epicentro, '#800080', 8); // P
+      const epicentroEvento = L.latLng(lat, lng);
+      crearOndaEpicentro(epicentroEvento, '#e5be01', 5); // S
+      crearOndaEpicentro(epicentroEvento, '#800080', 8); // P
       reproducirSonido("https://sasmex.net/mapa/audio/ecobeep.wav");
 
-      inicializarCirculosEpicentro(epicentro);
-      centrales.forEach(c => animarCentral(c.coord));
+      inicializarCirculosEpicentro(epicentroEvento);
+      centralesSismo.forEach(c => animarCentral(c.coord));
     }
 
     
@@ -301,40 +301,40 @@
   }
 
   function dibujarEpicentro() {
-    L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(map);
+    L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(mapaSismo);
   }
 
   function crearOnda(center, color, velocidad) {
-    const circulo = L.circle(center, {
+    const circuloOnda = L.circle(center, {
       radius: 0,
       color,
       weight: 2,
       fillOpacity: 0
-    }).addTo(map);
+    }).addTo(mapaSismo);
     let tiempo = 0;
-    const duracion = 120000;
-    const intervalo = setInterval(() =&gt; {
+    const duracionOnda = 120000;
+    const intervaloCentrales = setInterval(() =&gt; {
       tiempo += 100;
-      const nuevoRadio = (velocidad * tiempo) / 1000;
-      circulo.setRadius(nuevoRadio * 1000);
-      if (tiempo &gt;= duracion) {
-        clearInterval(intervalo);
-        map.removeLayer(circulo);
+      const radioAnimado = (velocidad * tiempo) / 1000;
+      circuloOnda.setRadius(radioAnimado * 1000);
+      if (tiempo &gt;= duracionOnda) {
+        clearInterval(intervaloCentrales);
+        mapaSismo.removeLayer(circuloOnda);
       }
     }, 100);
   }
 
   function dibujarCirculosEpicentro() {
-    const radios = [200000, 150000, 100000, 50000];
-    radios.forEach((r, i) =&gt; {
+    const radiosCentrales = [200000, 150000, 100000, 50000];
+    radiosCentrales.forEach((r, i) =&gt; {
       const c = L.circle([lat, lng], {
         radius: r,
         color: "gray",
         weight: 1,
         fillColor: "gray",
         fillOpacity: r === 50000 ? 0.1 : 0
-      }).addTo(map);
-      setTimeout(() =&gt; map.removeLayer(c), 300000);
+      }).addTo(mapaSismo);
+      setTimeout(() =&gt; mapaSismo.removeLayer(c), 300000);
     });
   }
 
@@ -378,7 +378,7 @@ DOCTYPE html&gt;
       width: 100%;
       overflow: hidden;
     }
-    #map {
+    #mapaSismo {
       width: 100vw;
       height: 100vh;
     }
@@ -432,7 +432,7 @@ DOCTYPE html&gt;
       border-radius: 50%;
       display: inline-block;
     }
-    #menu-btn {
+    #menu-btnMenu {
       position: absolute;
       top: 15px;
       right: 15px;
@@ -470,7 +470,7 @@ DOCTYPE html&gt;
   </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="mapaSismo"></div>
 <!-- Panel SASNO con INTENSIDAD -->
 <div id="panel">
 <div class="panel-section">
@@ -490,15 +490,15 @@ DOCTYPE html&gt;
 </div>
 </div>
 </div>
-<!-- Menú de capas -->
-<div id="menu-btn">☰</div>
+<!-- Menú de capasMapa -->
+<div id="menu-btnMenu">☰</div>
 <div id="menu-options">
 <div onclick="cambiarMapa('esri')">Esri Satelital</div>
 <div onclick="cambiarMapa('usgs')">USGS Imagery</div>
 <div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
 </div>
 <script>
-    const capas = {
+    const capasMapa = {
       esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri'
       }),
@@ -513,10 +513,10 @@ DOCTYPE html&gt;
       })
     };
 
-    const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capas.esri.addTo(map);
+    const mapaSismo = L.mapaSismo('mapaSismo', { zoomControl: false }).setView([19.3, -99.2], 7);
+    capasMapa.esri.addTo(mapaSismo);
 
-    const centrales = [
+    const centralesSismo = [
       { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
       { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
       { nombre: "Acapulco", coord: [16.8531, -99.8237] },
@@ -527,32 +527,32 @@ DOCTYPE html&gt;
     ];
 
     function dibujarCentrales() {
-      centrales.forEach(c => {
+      centralesSismo.forEach(c => {
         L.circle(c.coord, {
           radius: 10000,
           color: '#002f6c',
           fillColor: '#002f6c',
           fillOpacity: 1,
           weight: 2
-        }).addTo(map);
+        }).addTo(mapaSismo);
       });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
-      map.eachLayer(layer => map.removeLayer(layer));
-      capas[nombre].addTo(map);
+      mapaSismo.eachLayer(layer => mapaSismo.removeLayer(layer));
+      capasMapa[nombre].addTo(mapaSismo);
       dibujarCentrales();
       document.getElementById("menu-options").style.display = "none";
     }
 
-    const btn = document.getElementById('menu-btn');
-    const opciones = document.getElementById('menu-options');
-    btn.onclick = () => opciones.style.display = opciones.style.display === 'block' ? 'none' : 'block';
+    const btnMenu = document.getElementById('menu-btnMenu');
+    const opcionesMenu = document.getElementById('menu-options');
+    btnMenu.onclick = () => opcionesMenu.style.display = opcionesMenu.style.display === 'block' ? 'none' : 'block';
     window.onclick = e => {
-      if (!btn.contains(e.target) && !opciones.contains(e.target)) {
-        opciones.style.display = 'none';
+      if (!btnMenu.contains(e.target) && !opcionesMenu.contains(e.target)) {
+        opcionesMenu.style.display = 'none';
       }
     };
 
@@ -561,90 +561,90 @@ DOCTYPE html&gt;
     }
 
     function crearOndaEpicentro(center, color, velocidad) {
-      const circulo = L.circle(center, {
+      const circuloOnda = L.circle(center, {
         radius: 0,
         color,
         weight: 2,
         fillOpacity: 0,
         fillColor: 'transparent'
-      }).addTo(map);
+      }).addTo(mapaSismo);
 
       reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
 
       let tiempoTranscurrido = 0;
-      const duracion = 120000;
-      const crecimiento = setInterval(() => {
+      const duracionOnda = 120000;
+      const crecimientoOnda = setInterval(() => {
         tiempoTranscurrido += 100;
-        const nuevoRadio = (velocidad * tiempoTranscurrido) / 1000;
-        circulo.setRadius(nuevoRadio * 1000);
-        if (tiempoTranscurrido >= duracion) {
-          clearInterval(crecimiento);
-          map.removeLayer(circulo);
+        const radioAnimado = (velocidad * tiempoTranscurrido) / 1000;
+        circuloOnda.setRadius(radioAnimado * 1000);
+        if (tiempoTranscurrido >= duracionOnda) {
+          clearInterval(crecimientoOnda);
+          mapaSismo.removeLayer(circuloOnda);
         }
       }, 100);
     }
 
     function animarCentral(center) {
-      const duracionTotal = 120000;
-      const intervalo = 3000;
+      const duracionCentrales = 120000;
+      const intervaloCentrales = 3000;
       let tiempo = 0;
 
-      const loop = setInterval(() => {
-        if (tiempo >= duracionTotal) {
-          clearInterval(loop);
+      const loopCentral = setInterval(() => {
+        if (tiempo >= duracionCentrales) {
+          clearInterval(loopCentral);
           return;
         }
 
-        const radios = [15000, 30000, 45000, 60000];
-        radios.forEach((radio, i) => {
+        const radiosCentrales = [15000, 30000, 45000, 60000];
+        radiosCentrales.forEach((radio, i) => {
           setTimeout(() => {
-            const onda = L.circle(center, {
+            const ondaCentral = L.circle(center, {
               radius: radio,
               color: '#002f6c',
               weight: 1.5,
               fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(onda), 2500);
+            }).addTo(mapaSismo);
+            setTimeout(() => mapaSismo.removeLayer(ondaCentral), 2500);
           }, i * 300);
         });
 
-        tiempo += intervalo;
-      }, intervalo);
+        tiempo += intervaloCentrales;
+      }, intervaloCentrales);
     }
 
     function inicializarCirculosEpicentro(posicion) {
-      const config = [
+      const configCirculos = [
         { radio: 200000, relleno: false },
         { radio: 150000, relleno: false },
         { radio: 100000, relleno: false },
         { radio: 50000, relleno: true }
       ];
-      const circulos = [];
+      const circulosEpicentro = [];
 
-      config.forEach(item => {
-        const circulo = L.circle(posicion, {
+      configCirculos.forEach(item => {
+        const circuloOnda = L.circle(posicion, {
           radius: item.radio,
           color: 'gray',
           weight: 1,
           fillColor: 'gray',
           fillOpacity: item.relleno ? 0.1 : 0
-        }).addTo(map);
-        circulos.push(circulo);
+        }).addTo(mapaSismo);
+        circulosEpicentro.push(circuloOnda);
       });
 
       setTimeout(() => {
-        circulos.forEach(c => map.removeLayer(c));
+        circulosEpicentro.forEach(c => mapaSismo.removeLayer(c));
       }, 300000);
     }
 
     function mostrarEvento(lat, lng) {
-      const epicentro = L.latLng(lat, lng);
-      crearOndaEpicentro(epicentro, '#e5be01', 5); // S
-      crearOndaEpicentro(epicentro, '#800080', 8); // P
+      const epicentroEvento = L.latLng(lat, lng);
+      crearOndaEpicentro(epicentroEvento, '#e5be01', 5); // S
+      crearOndaEpicentro(epicentroEvento, '#800080', 8); // P
       reproducirSonido("https://sasmex.net/mapa/audio/ecobeep.wav");
 
-      inicializarCirculosEpicentro(epicentro);
-      centrales.forEach(c => animarCentral(c.coord));
+      inicializarCirculosEpicentro(epicentroEvento);
+      centralesSismo.forEach(c => animarCentral(c.coord));
     }
 
     
