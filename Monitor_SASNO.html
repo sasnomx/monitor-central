@@ -4,9 +4,123 @@
   <meta charset="UTF-8" />
   <title>Monitor Sísmico SASNO</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-messaging-compat.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js">
+function animarCentral(center) {
+    const duracionTotal = 120000;
+    const intervalo = 3000;
+    let tiempo = 0;
+
+    const centroFijo = L.circle(center, {
+        radius: 10000,
+        color: '#002f6c',
+        fillColor: '#002f6c',
+        weight: 3,
+        fillOpacity: 1
+    }).addTo(map);
+
+    const loop = setInterval(() => {
+        if (tiempo >= duracionTotal) {
+            clearInterval(loop);
+            map.removeLayer(centroFijo);
+            return;
+        }
+
+        const radios = [15000, 30000, 45000, 60000];
+        radios.forEach((r, i) => {
+            setTimeout(() => {
+                const onda = L.circle(center, {
+                    radius: r,
+                    color: '#002f6c',
+                    weight: 1.5,
+                    fillOpacity: 0
+                }).addTo(map);
+                setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+        });
+
+        tiempo += intervalo;
+    }, intervalo);
+}
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js">
+function animarCentral(center) {
+    const duracionTotal = 120000;
+    const intervalo = 3000;
+    let tiempo = 0;
+
+    const centroFijo = L.circle(center, {
+        radius: 10000,
+        color: '#002f6c',
+        fillColor: '#002f6c',
+        weight: 3,
+        fillOpacity: 1
+    }).addTo(map);
+
+    const loop = setInterval(() => {
+        if (tiempo >= duracionTotal) {
+            clearInterval(loop);
+            map.removeLayer(centroFijo);
+            return;
+        }
+
+        const radios = [15000, 30000, 45000, 60000];
+        radios.forEach((r, i) => {
+            setTimeout(() => {
+                const onda = L.circle(center, {
+                    radius: r,
+                    color: '#002f6c',
+                    weight: 1.5,
+                    fillOpacity: 0
+                }).addTo(map);
+                setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+        });
+
+        tiempo += intervalo;
+    }, intervalo);
+}
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-messaging-compat.js">
+function animarCentral(center) {
+    const duracionTotal = 120000;
+    const intervalo = 3000;
+    let tiempo = 0;
+
+    const centroFijo = L.circle(center, {
+        radius: 10000,
+        color: '#002f6c',
+        fillColor: '#002f6c',
+        weight: 3,
+        fillOpacity: 1
+    }).addTo(map);
+
+    const loop = setInterval(() => {
+        if (tiempo >= duracionTotal) {
+            clearInterval(loop);
+            map.removeLayer(centroFijo);
+            return;
+        }
+
+        const radios = [15000, 30000, 45000, 60000];
+        radios.forEach((r, i) => {
+            setTimeout(() => {
+                const onda = L.circle(center, {
+                    radius: r,
+                    color: '#002f6c',
+                    weight: 1.5,
+                    fillOpacity: 0
+                }).addTo(map);
+                setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+        });
+
+        tiempo += intervalo;
+    }, intervalo);
+}
+
+</script>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
     #map { width: 100vw; height: 100vh; }
@@ -97,7 +211,7 @@
       });
     }
 
-    function animarCentrales() {
+    // replaced
       centrales.forEach(coord => {
         const duracionTotal = 120000;
         const intervalo = 3000;
@@ -157,7 +271,7 @@
       actualizarIntensidad(estado);
       if (estado === "WARNING") {
         reproducirSonido("ecobeep.wav");
-        animarCentrales();
+        centrales.forEach(c => animarCentral(c));
       } else if (estado === "ADVISORY") {
         reproducirSonido("ecobeep.wav");
       }
@@ -170,6 +284,44 @@
         dibujarCirculosEpicentro(center);
       }
     });
-  </script>
+  
+function animarCentral(center) {
+    const duracionTotal = 120000;
+    const intervalo = 3000;
+    let tiempo = 0;
+
+    const centroFijo = L.circle(center, {
+        radius: 10000,
+        color: '#002f6c',
+        fillColor: '#002f6c',
+        weight: 3,
+        fillOpacity: 1
+    }).addTo(map);
+
+    const loop = setInterval(() => {
+        if (tiempo >= duracionTotal) {
+            clearInterval(loop);
+            map.removeLayer(centroFijo);
+            return;
+        }
+
+        const radios = [15000, 30000, 45000, 60000];
+        radios.forEach((r, i) => {
+            setTimeout(() => {
+                const onda = L.circle(center, {
+                    radius: r,
+                    color: '#002f6c',
+                    weight: 1.5,
+                    fillOpacity: 0
+                }).addTo(map);
+                setTimeout(() => map.removeLayer(onda), 2500);
+            }, i * 300);
+        });
+
+        tiempo += intervalo;
+    }, intervalo);
+}
+
+</script>
 </body>
 </html>
