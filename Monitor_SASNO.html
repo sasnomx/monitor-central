@@ -232,7 +232,7 @@ function actualizarIntensidad(tipo) {
           tiempo += intervalo;
         }, intervalo);
       });
-    
+    }
 
     const firebaseConfig = {
       apiKey: "AIzaSyC4nqBYRE79R_rWlpE5cqClBtA_-zx4-5I",
@@ -264,6 +264,7 @@ function actualizarIntensidad(tipo) {
       });
     };
 
+    
     messaging.onMessage(payload => {
       const data = payload.data || {};
       const estado = data.estado || "ADVISORY";
@@ -286,7 +287,6 @@ function actualizarIntensidad(tipo) {
         dibujarCirculosEpicentro(center);
       }
     });
-  
 function animarCentral(center) {
     const duracionTotal = 120000;
     const intervalo = 3000;
