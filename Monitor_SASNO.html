@@ -150,6 +150,8 @@ function animarCentral(center) {
     }).addTo(map);
 
     // Dibujar círculos azules en centrales
+    
+    // Centrales dibujadas después de crear el mapa
     const centrales = [
       [19.4326, -99.1332], [17.0732, -96.7266], [16.8531, -99.8237],
       [17.5506, -99.5058], [19.7008, -101.186], [19.0414, -98.2063],
@@ -158,13 +160,13 @@ function animarCentral(center) {
     centrales.forEach(coord => {
       L.circle(coord, {
         radius: 10000,
-        color: 'blue',
-        fillColor: 'blue',
-        fillOpacity: 0.5
+        color: '#002f6c',
+        fillColor: '#002f6c',
+        weight: 3,
+        fillOpacity: 1
       }).addTo(map);
     });
-
-    function actualizarIntensidad(tipo) {
+function actualizarIntensidad(tipo) {
       const el = document.getElementById("intensidad");
       if (tipo === "WARNING") {
         el.innerText = "FUERTE 🟠";
@@ -230,7 +232,7 @@ function animarCentral(center) {
           tiempo += intervalo;
         }, intervalo);
       });
-    
+    }
 
     const firebaseConfig = {
       apiKey: "AIzaSyC4nqBYRE79R_rWlpE5cqClBtA_-zx4-5I",
