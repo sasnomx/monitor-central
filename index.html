@@ -11,8 +11,7 @@
     html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
     #map { width: 100vw; height: 100vh; }
     #panel {
-      position: absolute;
-      bottom: 15px; left: 15px;
+      position: absolute; bottom: 15px; left: 15px;
       background-color: black; color: white;
       width: 330px; font-family: sans-serif;
       font-size: 13px; border: 2px solid white; z-index: 9999;
@@ -49,6 +48,7 @@
 </head>
 <body>
   <div id="map"></div>
+
   <div id="panel">
     <div class="panel-section">
       <div class="title">SASNO</div>
@@ -122,6 +122,7 @@
       }
     }
 
+    // Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC4nqBYRE79R_rWlpE5cqClBtA_-zx4-5I",
       authDomain: "sasno-d79e1.firebaseapp.com",
@@ -131,16 +132,15 @@
       appId: "1:273171190720:web:68cc939db4a2e74c5c2e25"
     };
     firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
+    const messaging = firebase.messaging();
 
-// REGISTRO DEL SERVICE WORKER CON RUTA CORRECTA EN SUBCARPETA
-navigator.serviceWorker.register('/monitor-central/firebase-messaging-sw.js')
-  .then((registration) => {
-    messaging.useServiceWorker(registration);
-    console.log("✅ Service Worker registrado desde subcarpeta /monitor-central");
-  }).catch((err) => {
-    console.error("❌ Error al registrar el Service Worker:", err);
-  });
+    navigator.serviceWorker.register('/monitor-central/firebase-messaging-sw.js')
+      .then((registration) => {
+        messaging.useServiceWorker(registration);
+        console.log("✅ Service Worker registrado correctamente");
+      }).catch((err) => {
+        console.error("❌ Error al registrar el Service Worker:", err);
+      });
 
     document.getElementById("activarNotificaciones").onclick = () => {
       messaging.getToken({
@@ -148,7 +148,7 @@ navigator.serviceWorker.register('/monitor-central/firebase-messaging-sw.js')
       }).then(token => {
         console.log("✅ Token FCM:", token);
         alert("Token obtenido. Suscrito a EQW y LOWINTENSITYQUAKES.");
-        // Aquí se pueden suscribir en el backend si se requiere
+        // Aquí puedes suscribirte en tu backend si es necesario
       }).catch(err => {
         console.error("❌ Error al obtener token:", err);
         alert("Permiso denegado o bloqueado.");
