@@ -258,7 +258,6 @@
       const circulosEpicentro = [];
 
       configCirculos.forEach(item => {
-        const circuloOnda = L.circle(posicion, {
           radius: item.radio,
           color: 'gray',
           weight: 1,
@@ -305,17 +304,13 @@
   }
 
   function crearOnda(center, color, velocidad) {
-    const circuloOnda = L.circle(center, {
       radius: 0,
       color,
       weight: 2,
       fillOpacity: 0
     }).addTo(map);
     let tiempo = 0;
-    const duracionOnda = 120000;
-    const intervaloCentrales = setInterval(() =&gt; {
       tiempo += 100;
-      const radioAnimado = (velocidad * tiempo) / 1000;
       circuloOnda.setRadius(radioAnimado * 1000);
       if (tiempo &gt;= duracionOnda) {
         clearInterval(intervaloCentrales);
@@ -325,7 +320,6 @@
   }
 
   function dibujarCirculosEpicentro() {
-    const radiosCentrales = [200000, 150000, 100000, 50000];
     radiosCentrales.forEach((r, i) =&gt; {
       const c = L.circle([lat, lng], {
         radius: r,
@@ -498,7 +492,6 @@ DOCTYPE html&gt;
 <div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
 </div>
 <script>
-    const capasMapa = {
       esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri'
       }),
@@ -515,7 +508,6 @@ DOCTYPE html&gt;
 
     capasMapa.esri.addTo(map);
 
-    const centralesSismo = [
       { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
       { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
       { nombre: "Acapulco", coord: [16.8531, -99.8237] },
@@ -546,8 +538,6 @@ DOCTYPE html&gt;
       document.getElementById("menu-options").style.display = "none";
     }
 
-    const btnMenu = document.getElementById('menu-btnMenu');
-    const opcionesMenu = document.getElementById('menu-options');
     btnMenu.onclick = () => opcionesMenu.style.display = opcionesMenu.style.display === 'block' ? 'none' : 'block';
     window.onclick = e => {
       if (!btnMenu.contains(e.target) && !opcionesMenu.contains(e.target)) {
@@ -560,7 +550,6 @@ DOCTYPE html&gt;
     }
 
     function crearOndaEpicentro(center, color, velocidad) {
-      const circuloOnda = L.circle(center, {
         radius: 0,
         color,
         weight: 2,
@@ -571,10 +560,7 @@ DOCTYPE html&gt;
       reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
 
       let tiempoTranscurrido = 0;
-      const duracionOnda = 120000;
-      const crecimientoOnda = setInterval(() => {
         tiempoTranscurrido += 100;
-        const radioAnimado = (velocidad * tiempoTranscurrido) / 1000;
         circuloOnda.setRadius(radioAnimado * 1000);
         if (tiempoTranscurrido >= duracionOnda) {
           clearInterval(crecimientoOnda);
@@ -584,20 +570,15 @@ DOCTYPE html&gt;
     }
 
     function animarCentral(center) {
-      const duracionCentrales = 120000;
-      const intervaloCentrales = 3000;
       let tiempo = 0;
 
-      const loopCentral = setInterval(() => {
         if (tiempo >= duracionCentrales) {
           clearInterval(loopCentral);
           return;
         }
 
-        const radiosCentrales = [15000, 30000, 45000, 60000];
         radiosCentrales.forEach((radio, i) => {
           setTimeout(() => {
-            const ondaCentral = L.circle(center, {
               radius: radio,
               color: '#002f6c',
               weight: 1.5,
@@ -612,16 +593,13 @@ DOCTYPE html&gt;
     }
 
     function inicializarCirculosEpicentro(posicion) {
-      const configCirculos = [
         { radio: 200000, relleno: false },
         { radio: 150000, relleno: false },
         { radio: 100000, relleno: false },
         { radio: 50000, relleno: true }
       ];
-      const circulosEpicentro = [];
 
       configCirculos.forEach(item => {
-        const circuloOnda = L.circle(posicion, {
           radius: item.radio,
           color: 'gray',
           weight: 1,
@@ -637,7 +615,6 @@ DOCTYPE html&gt;
     }
 
     function mostrarEvento(lat, lng) {
-      const epicentroEvento = L.latLng(lat, lng);
       crearOndaEpicentro(epicentroEvento, '#e5be01', 5); // S
       crearOndaEpicentro(epicentroEvento, '#800080', 8); // P
       reproducirSonido("https://sasmex.net/mapa/audio/ecobeep.wav");
