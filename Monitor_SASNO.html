@@ -126,123 +126,12 @@
 </div>
 </div>
 </div>
-<!-- Menú de capasMapa -->
-<div id="menu-btnMenu">☰</div>
-<div id="menu-options">
-<div onclick="cambiarMapa('esri')">Esri Satelital</div>
-<div onclick="cambiarMapa('usgs')">USGS Imagery</div>
-<div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
-</div>
-<script>
-    const capasMapa = {
-      esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri'
-      }),
-      usgs: L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20,
-        attribution: 'USGS'
-      }),
-      carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap & CARTO',
-        subdomains: 'abcd',
-        maxZoom: 20
-      })
-    };
-
-    const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capasMapa.esri.addTo(map);
-
-    const centralesSismo = [
-      { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
-      { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
-      { nombre: "Acapulco", coord: [16.8531, -99.8237] },
-      { nombre: "Chilpancingo", coord: [17.5506, -99.5058] },
-      { nombre: "Morelia", coord: [19.7008, -101.186] },
-      { nombre: "Puebla", coord: [19.0414, -98.2063] },
-      { nombre: "Colima", coord: [19.2433, -103.725] }
-    ];
-
-    function dibujarCentrales() {
-      centralesSismo.forEach(c => {
-        L.circle(c.coord, {
-          radius: 10000,
-          color: '#002f6c',
-          fillColor: '#002f6c',
-          fillOpacity: 1,
-          weight: 2
-        }).addTo(map);
-      });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
       map.eachLayer(layer => map.removeLayer(layer));
-      capasMapa[nombre].addTo(map);
-      dibujarCentrales();
-      document.getElementById("menu-options").style.display = "none";
-    }
-
-    const btnMenu = document.getElementById('menu-btnMenu');
-    const opcionesMenu = document.getElementById('menu-options');
-    btnMenu.onclick = () => opcionesMenu.style.display = opcionesMenu.style.display === 'block' ? 'none' : 'block';
-    window.onclick = e => {
-      if (!btnMenu.contains(e.target) && !opcionesMenu.contains(e.target)) {
-        opcionesMenu.style.display = 'none';
-      }
-    };
-
-    function reproducirSonido(url) {
-      new Audio(url).play();
-    }
-
-    function crearOndaEpicentro(center, color, velocidad) {
-      const circuloOnda = L.circle(center, {
-        radius: 0,
-        color,
-        weight: 2,
-        fillOpacity: 0,
-        fillColor: 'transparent'
-      }).addTo(map);
-
-      reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
-
-      let tiempoTranscurrido = 0;
-      const duracionOnda = 120000;
-      const crecimientoOnda = setInterval(() => {
-        tiempoTranscurrido += 100;
-        const radioAnimado = (velocidad * tiempoTranscurrido) / 1000;
-        circuloOnda.setRadius(radioAnimado * 1000);
-        if (tiempoTranscurrido >= duracionOnda) {
-          clearInterval(crecimientoOnda);
-          map.removeLayer(circuloOnda);
-        }
-      }, 100);
-    }
-
-    function animarCentral(center) {
-      const duracionCentrales = 120000;
-      const intervaloCentrales = 3000;
-      let tiempo = 0;
-
-      const loopCentral = setInterval(() => {
-        if (tiempo >= duracionCentrales) {
-          clearInterval(loopCentral);
-          return;
-        }
-
-        const radiosCentrales = [15000, 30000, 45000, 60000];
-        radiosCentrales.forEach((radio, i) => {
-          setTimeout(() => {
-            const ondaCentral = L.circle(center, {
-              radius: radio,
-              color: '#002f6c',
-              weight: 1.5,
-              fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(ondaCentral), 2500);
-          }, i * 300);
-        });
 
         tiempo += intervaloCentrales;
       }, intervaloCentrales);
@@ -484,109 +373,12 @@ DOCTYPE html&gt;
 </div>
 </div>
 </div>
-<!-- Menú de capasMapa -->
-<div id="menu-btnMenu">☰</div>
-<div id="menu-options">
-<div onclick="cambiarMapa('esri')">Esri Satelital</div>
-<div onclick="cambiarMapa('usgs')">USGS Imagery</div>
-<div onclick="cambiarMapa('carto')">CartoDB Voyager</div>
-</div>
-<script>
-      esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri'
-      }),
-// usgs: L.tileLayer(...)
-        maxZoom: 20,
-        attribution: 'USGS'
-      }),
-      carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap & CARTO',
-        subdomains: 'abcd',
-        maxZoom: 20
-      })
-    };
-
-    capasMapa.esri.addTo(map);
-
-      { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
-      { nombre: "Oaxaca", coord: [17.0732, -96.7266] },
-      { nombre: "Acapulco", coord: [16.8531, -99.8237] },
-      { nombre: "Chilpancingo", coord: [17.5506, -99.5058] },
-      { nombre: "Morelia", coord: [19.7008, -101.186] },
-      { nombre: "Puebla", coord: [19.0414, -98.2063] },
-      { nombre: "Colima", coord: [19.2433, -103.725] }
-    ];
-
-    function dibujarCentrales() {
-      centralesSismo.forEach(c => {
-        L.circle(c.coord, {
-          radius: 10000,
-          color: '#002f6c',
-          fillColor: '#002f6c',
-          fillOpacity: 1,
-          weight: 2
-        }).addTo(map);
-      });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
       map.eachLayer(layer => map.removeLayer(layer));
-      capasMapa[nombre].addTo(map);
-      dibujarCentrales();
-      document.getElementById("menu-options").style.display = "none";
-    }
-
-    btnMenu.onclick = () => opcionesMenu.style.display = opcionesMenu.style.display === 'block' ? 'none' : 'block';
-    window.onclick = e => {
-      if (!btnMenu.contains(e.target) && !opcionesMenu.contains(e.target)) {
-        opcionesMenu.style.display = 'none';
-      }
-    };
-
-    function reproducirSonido(url) {
-      new Audio(url).play();
-    }
-
-    function crearOndaEpicentro(center, color, velocidad) {
-        radius: 0,
-        color,
-        weight: 2,
-        fillOpacity: 0,
-        fillColor: 'transparent'
-      }).addTo(map);
-
-      reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
-
-      let tiempoTranscurrido = 0;
-        tiempoTranscurrido += 100;
-        circuloOnda.setRadius(radioAnimado * 1000);
-        if (tiempoTranscurrido >= duracionOnda) {
-          clearInterval(crecimientoOnda);
-          map.removeLayer(circuloOnda);
-        }
-      }, 100);
-    }
-
-    function animarCentral(center) {
-      let tiempo = 0;
-
-        if (tiempo >= duracionCentrales) {
-          clearInterval(loopCentral);
-          return;
-        }
-
-        radiosCentrales.forEach((radio, i) => {
-          setTimeout(() => {
-              radius: radio,
-              color: '#002f6c',
-              weight: 1.5,
-              fillOpacity: 0
-            }).addTo(map);
-            setTimeout(() => map.removeLayer(ondaCentral), 2500);
-          }, i * 300);
-        });
 
         tiempo += intervaloCentrales;
       }, intervaloCentrales);
