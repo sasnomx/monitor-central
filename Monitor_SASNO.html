@@ -14,7 +14,7 @@
       width: 100%;
       overflow: hidden;
     }
-    #mapaSismo {
+    #map {
       width: 100vw;
       height: 100vh;
     }
@@ -106,7 +106,7 @@
   </style>
 </head>
 <body><button id="activarNotificaciones">Activar Notificaciones</button>
-<div id="mapaSismo"></div>
+<div id="map"></div>
 <!-- Panel SASNO con INTENSIDAD -->
 <div id="panel">
 <div class="panel-section">
@@ -149,8 +149,8 @@
       })
     };
 
-    const mapaSismo = L.mapaSismo('mapaSismo', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capasMapa.esri.addTo(mapaSismo);
+    const map = L.map('map', { zoomControl: false }).setView([19.3, -99.2], 7);
+    capasMapa.esri.addTo(map);
 
     const centralesSismo = [
       { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
@@ -170,15 +170,15 @@
           fillColor: '#002f6c',
           fillOpacity: 1,
           weight: 2
-        }).addTo(mapaSismo);
+        }).addTo(map);
       });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
-      mapaSismo.eachLayer(layer => mapaSismo.removeLayer(layer));
-      capasMapa[nombre].addTo(mapaSismo);
+      map.eachLayer(layer => map.removeLayer(layer));
+      capasMapa[nombre].addTo(map);
       dibujarCentrales();
       document.getElementById("menu-options").style.display = "none";
     }
@@ -203,7 +203,7 @@
         weight: 2,
         fillOpacity: 0,
         fillColor: 'transparent'
-      }).addTo(mapaSismo);
+      }).addTo(map);
 
       reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
 
@@ -215,7 +215,7 @@
         circuloOnda.setRadius(radioAnimado * 1000);
         if (tiempoTranscurrido >= duracionOnda) {
           clearInterval(crecimientoOnda);
-          mapaSismo.removeLayer(circuloOnda);
+          map.removeLayer(circuloOnda);
         }
       }, 100);
     }
@@ -239,8 +239,8 @@
               color: '#002f6c',
               weight: 1.5,
               fillOpacity: 0
-            }).addTo(mapaSismo);
-            setTimeout(() => mapaSismo.removeLayer(ondaCentral), 2500);
+            }).addTo(map);
+            setTimeout(() => map.removeLayer(ondaCentral), 2500);
           }, i * 300);
         });
 
@@ -264,12 +264,12 @@
           weight: 1,
           fillColor: 'gray',
           fillOpacity: item.relleno ? 0.1 : 0
-        }).addTo(mapaSismo);
+        }).addTo(map);
         circulosEpicentro.push(circuloOnda);
       });
 
       setTimeout(() => {
-        circulosEpicentro.forEach(c => mapaSismo.removeLayer(c));
+        circulosEpicentro.forEach(c => map.removeLayer(c));
       }, 300000);
     }
 
@@ -301,7 +301,7 @@
   }
 
   function dibujarEpicentro() {
-    L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(mapaSismo);
+    L.circle([lat, lng], { radius: 10000, color: "red" }).addTo(map);
   }
 
   function crearOnda(center, color, velocidad) {
@@ -310,7 +310,7 @@
       color,
       weight: 2,
       fillOpacity: 0
-    }).addTo(mapaSismo);
+    }).addTo(map);
     let tiempo = 0;
     const duracionOnda = 120000;
     const intervaloCentrales = setInterval(() =&gt; {
@@ -319,7 +319,7 @@
       circuloOnda.setRadius(radioAnimado * 1000);
       if (tiempo &gt;= duracionOnda) {
         clearInterval(intervaloCentrales);
-        mapaSismo.removeLayer(circuloOnda);
+        map.removeLayer(circuloOnda);
       }
     }, 100);
   }
@@ -333,8 +333,8 @@
         weight: 1,
         fillColor: "gray",
         fillOpacity: r === 50000 ? 0.1 : 0
-      }).addTo(mapaSismo);
-      setTimeout(() =&gt; mapaSismo.removeLayer(c), 300000);
+      }).addTo(map);
+      setTimeout(() =&gt; map.removeLayer(c), 300000);
     });
   }
 
@@ -378,7 +378,7 @@ DOCTYPE html&gt;
       width: 100%;
       overflow: hidden;
     }
-    #mapaSismo {
+    #map {
       width: 100vw;
       height: 100vh;
     }
@@ -470,7 +470,7 @@ DOCTYPE html&gt;
   </style>
 </head>
 <body>
-<div id="mapaSismo"></div>
+<div id="map"></div>
 <!-- Panel SASNO con INTENSIDAD -->
 <div id="panel">
 <div class="panel-section">
@@ -513,8 +513,7 @@ DOCTYPE html&gt;
       })
     };
 
-    const mapaSismo = L.mapaSismo('mapaSismo', { zoomControl: false }).setView([19.3, -99.2], 7);
-    capasMapa.esri.addTo(mapaSismo);
+    capasMapa.esri.addTo(map);
 
     const centralesSismo = [
       { nombre: "Ciudad de México", coord: [19.4326, -99.1332] },
@@ -534,15 +533,15 @@ DOCTYPE html&gt;
           fillColor: '#002f6c',
           fillOpacity: 1,
           weight: 2
-        }).addTo(mapaSismo);
+        }).addTo(map);
       });
     }
 
     dibujarCentrales();
 
     function cambiarMapa(nombre) {
-      mapaSismo.eachLayer(layer => mapaSismo.removeLayer(layer));
-      capasMapa[nombre].addTo(mapaSismo);
+      map.eachLayer(layer => map.removeLayer(layer));
+      capasMapa[nombre].addTo(map);
       dibujarCentrales();
       document.getElementById("menu-options").style.display = "none";
     }
@@ -567,7 +566,7 @@ DOCTYPE html&gt;
         weight: 2,
         fillOpacity: 0,
         fillColor: 'transparent'
-      }).addTo(mapaSismo);
+      }).addTo(map);
 
       reproducirSonido("https://sasmex.net/mapa/audio/VikingsHorn2.wav");
 
@@ -579,7 +578,7 @@ DOCTYPE html&gt;
         circuloOnda.setRadius(radioAnimado * 1000);
         if (tiempoTranscurrido >= duracionOnda) {
           clearInterval(crecimientoOnda);
-          mapaSismo.removeLayer(circuloOnda);
+          map.removeLayer(circuloOnda);
         }
       }, 100);
     }
@@ -603,8 +602,8 @@ DOCTYPE html&gt;
               color: '#002f6c',
               weight: 1.5,
               fillOpacity: 0
-            }).addTo(mapaSismo);
-            setTimeout(() => mapaSismo.removeLayer(ondaCentral), 2500);
+            }).addTo(map);
+            setTimeout(() => map.removeLayer(ondaCentral), 2500);
           }, i * 300);
         });
 
@@ -628,12 +627,12 @@ DOCTYPE html&gt;
           weight: 1,
           fillColor: 'gray',
           fillOpacity: item.relleno ? 0.1 : 0
-        }).addTo(mapaSismo);
+        }).addTo(map);
         circulosEpicentro.push(circuloOnda);
       });
 
       setTimeout(() => {
-        circulosEpicentro.forEach(c => mapaSismo.removeLayer(c));
+        circulosEpicentro.forEach(c => map.removeLayer(c));
       }, 300000);
     }
 
