@@ -144,6 +144,7 @@
         <circle cx="16" cy="16" r="8"></circle>
       </svg>
       <h6 id="conectadoLabelId">Desconectado</h6>
+      <p id="labelDiferenciaServId" class="m-0 p-0 align-self-center">[---]</p>
     </div>
     <h5>Monitor del SASNO</h5>
     <p>©2025 SASNO Versión 1.0</p>
@@ -174,6 +175,7 @@
     let circulosAnimados = [];
     let anticipacionTimeout = null;
     let sismoActivo = false;
+    let pingTimestamp = null;
 
     function mostrarMensaje(texto) {
       const alerta = document.getElementById('alerta-texto');
@@ -266,27 +268,51 @@
       }
     }
 
-    const socket = new WebSocket("ws://localhost:2500");
+    // WebSocket
+    const socket = new WebSocket("ws://localhost:3000");
 
     socket.onopen = () => {
       document.getElementById("conectadoLabelId").innerText = "Conectado";
       document.getElementById("conectadoLabelId").style.color = "green";
       document.querySelector("svg circle").setAttribute("fill", "#00cc00");
       mostrarMensaje("Conexión exitosa al servidor");
+
+      setInterval(() => {
+        socket.send("PING");
+        pingTimestamp = Date.now();
+      }, 5000);
     };
 
     socket.onerror = () => {
+      document.getElementById("conectadoLabelId").innerText = "Desconectado";
+      document.getElementById("conectadoLabelId").style.color = "red";
+      document.querySelector("svg circle").setAttribute("fill", "#cc0000");
       mostrarMensaje("Conexión fallida");
     };
 
+    socket.onclose = () => {
+      document.getElementById("conectadoLabelId").innerText = "Desconectado";
+      document.getElementById("conectadoLabelId").style.color = "red";
+      document.querySelector("svg circle").setAttribute("fill", "#cc0000");
+    };
+
     socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.lat && data.lng) {
-          mostrarEvento(data.lat, data.lng);
+      const data = event.data.trim();
+      if (data === "PONG") {
+        const dif = Date.now() - pingTimestamp;
+        document.getElementById("labelDiferenciaServId").innerText = `[${dif}ms]`;
+        return;
+      }
+
+      if (data.startsWith("SEP:")) {
+        const coords = data.replace("SEP:", "").split(",");
+        const lat = parseFloat(coords[0]);
+        const lng = parseFloat(coords[1]);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          mostrarEvento(lat, lng);
         }
-      } catch (e) {
-        console.error("Error al procesar mensaje WebSocket:", e);
+      } else if (data.startsWith("SERVTEXT:")) {
+        mostrarMensaje(data.replace("SERVTEXT:", "").trim());
       }
     };
   </script>
