@@ -12,19 +12,16 @@
       margin: 0;
       font-family: 'Montserrat', sans-serif;
     }
-
     .logo-sasno {
       position: absolute;
       top: 20px;
       left: 20px;
       z-index: 999;
     }
-
     .logo-sasno img {
       width: 250px;
       height: auto;
     }
-
     #anticipacionBox {
       font-size: 13px;
       background: #fff;
@@ -39,7 +36,6 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.3);
       border: 1px solid #ccc;
     }
-
     .anticipacion-header {
       font-weight: bold;
       text-align: center;
@@ -48,24 +44,20 @@
       border-bottom: 1px solid #ccc;
       background: #f5f5f5;
     }
-
     .anticipacion-table {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       padding: 10px 20px;
     }
-
     .anticipacion-table .col {
       flex: 1;
     }
-
     .anticipacion-table ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-
     .anticipacion-table li {
       padding: 4px 0;
       border-bottom: 1px solid #eee;
@@ -73,7 +65,6 @@
       display: flex;
       justify-content: space-between;
     }
-
     #info-disclaimer {
       position: absolute;
       bottom: 26px;
@@ -87,37 +78,31 @@
       z-index: 999;
       border: 2px solid #999;
     }
-
     #info-disclaimer h5 {
       margin: 10px 0 4px;
       font-size: 17px;
       font-weight: 600;
     }
-
     #info-disclaimer p {
       margin: 0;
       font-size: 13px;
     }
-
     #signal {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-
     #conectadoLabelId {
       font-weight: 700;
       font-size: 15px;
       color: red;
     }
-
     svg circle {
       stroke: #660000;
       stroke-width: 2;
       fill: #cc0000;
       fill-opacity: 0.8;
     }
-
     #alerta-texto {
       position: absolute;
       top: 20px;
@@ -281,7 +266,6 @@
       }
     }
 
-    // WebSocket Connection
     const socket = new WebSocket("ws://localhost:2500");
 
     socket.onopen = () => {
