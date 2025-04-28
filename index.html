@@ -22,49 +22,6 @@
       width: 250px;
       height: auto;
     }
-    #anticipacionBox {
-      font-size: 13px;
-      background: #fff;
-      border-radius: 15px;
-      z-index: 999;
-      position: absolute;
-      top: 10px;
-      right: 300px;
-      width: 380px;
-      overflow: hidden;
-      color: #000;
-      box-shadow: 0 0 12px rgba(0,0,0,0.3);
-      border: 1px solid #ccc;
-    }
-    .anticipacion-header {
-      font-weight: bold;
-      text-align: center;
-      font-size: 20px;
-      padding: 12px;
-      border-bottom: 1px solid #ccc;
-      background: #f5f5f5;
-    }
-    .anticipacion-table {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 10px 20px;
-    }
-    .anticipacion-table .col {
-      flex: 1;
-    }
-    .anticipacion-table ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .anticipacion-table li {
-      padding: 4px 0;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
     #info-disclaimer {
       position: absolute;
       bottom: 26px;
@@ -77,6 +34,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       z-index: 999;
       border: 2px solid #999;
+      text-align: center; /* CENTRA EL TEXTO */
     }
     #info-disclaimer h5 {
       margin: 10px 0 4px;
@@ -87,14 +45,10 @@
       margin: 0;
       font-size: 13px;
     }
-    #signal {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
     #conectadoLabelId {
       font-weight: 700;
-      font-size: 15px;
+      font-size: 16px;
+      margin: 5px 0;
       color: red;
     }
     #alerta-texto {
@@ -108,6 +62,7 @@
       font-family: 'Montserrat', sans-serif;
       color: black;
       display: none;
+      text-align: center;
     }
   </style>
 </head>
@@ -120,22 +75,13 @@
 
   <div id="alerta-texto"></div>
 
-  <div id="anticipacionBox" style="display: none;">
-    <div class="anticipacion-header" id="anticipacionHeader">¡Sismo en progreso!</div>
-    <div class="anticipacion-table">
-      <div class="col"><ul id="ciudadesList"></ul></div>
-      <div class="col"><ul id="tiemposList"></ul></div>
-    </div>
-  </div>
-
   <div id="info-disclaimer">
-    <div id="signal">
-      <h6 id="conectadoLabelId">Desconectado</h6>
-    </div>
+    <h6 id="conectadoLabelId">Desconectado</h6>
     <h5>Monitor del SASNO</h5>
     <p>©2025 SASNO Versión 1.0</p>
   </div>
 
+  <!-- Audios -->
   <audio id="audioSismo" src="audio/VikingsHorn2.wav" preload="auto"></audio>
   <audio id="audioTexto" src="audio/ecobeep.wav" preload="auto"></audio>
 
@@ -150,22 +96,9 @@
 
     const audioSismo = document.getElementById("audioSismo");
     const audioTexto = document.getElementById("audioTexto");
-    let colaAudio = Promise.resolve();
     let circulosFijos = [], circulosAnimados = [];
+    let colaAudio = Promise.resolve();
     let sismoActivo = false;
-    let anticipacionTimeout = null;
-
-    const ciudades = {
-      "Ciudad de México": [19.4326, -99.1332],
-      "Oaxaca": [17.0732, -96.7266],
-      "Acapulco": [16.8531, -99.8237],
-      "Chilpancingo": [17.5506, -99.5058],
-      "Morelia": [19.7008, -101.186],
-      "Puebla": [19.0414, -98.2063],
-      "Cuernavaca": [18.9242, -99.2216],
-      "Colima": [19.2433, -103.725],
-      "Toluca": [19.2826, -99.6557]
-    };
 
     function mostrarMensaje(texto) {
       const alerta = document.getElementById('alerta-texto');
@@ -190,8 +123,11 @@
       });
       crearCirculoAnimado(epicentro, '#800080', 6.5, 15);
       crearCirculoAnimado(epicentro, '#e5be01', 3.5, 15);
-      mostrarAnticipacion(epicentro);
-      mostrarMensaje('¡Sismo en Progreso!');
+
+      setTimeout(() => { 
+        limpiarEvento();
+        sismoActivo = false;
+      }, 130000 + 5 * 60 * 1000);
     }
 
     function crearCirculoAnimado(center, color, velocidad, retraso) {
@@ -216,38 +152,11 @@
       requestAnimationFrame(animar);
     }
 
-    function mostrarAnticipacion(epicentro) {
-      document.getElementById('anticipacionHeader').innerText = '¡Sismo en progreso!';
-      document.getElementById('anticipacionBox').style.display = 'block';
-      const listaCiudades = document.getElementById('ciudadesList');
-      const listaTiempos = document.getElementById('tiemposList');
-      listaCiudades.innerHTML = '';
-      listaTiempos.innerHTML = '';
-      for (const [ciudad, coord] of Object.entries(ciudades)) {
-        const distancia = epicentro.distanceTo(coord);
-        const segundos = Math.max(0, Math.round(distancia / 3500) - 15);
-        listaCiudades.innerHTML += `<li>${ciudad}</li>`;
-        listaTiempos.innerHTML += `<li>${segundos}s</li>`;
-      }
-      clearTimeout(anticipacionTimeout);
-      anticipacionTimeout = setTimeout(() => {
-        limpiarEvento(true);
-        sismoActivo = false;
-      }, 130000 + 5 * 60 * 1000);
-      setTimeout(() => {
-        document.getElementById('anticipacionHeader').innerText = 'Sismo finalizado';
-        mostrarMensaje('Sismo Finalizado');
-      }, 130000);
-    }
-
-    function limpiarEvento(tambienOcultarTabla = false) {
+    function limpiarEvento() {
       circulosFijos.forEach(c => map.removeLayer(c));
       circulosFijos = [];
       circulosAnimados.forEach(c => map.removeLayer(c));
       circulosAnimados = [];
-      if (tambienOcultarTabla) {
-        document.getElementById('anticipacionBox').style.display = 'none';
-      }
     }
 
     const socket = new WebSocket("ws://localhost:3000");
@@ -255,11 +164,13 @@
     socket.onopen = () => {
       document.getElementById("conectadoLabelId").innerText = "Conectado";
       document.getElementById("conectadoLabelId").style.color = "#25a617";
+      mostrarMensaje("Conexión exitosa al servidor");
     };
 
     socket.onerror = () => {
       document.getElementById("conectadoLabelId").innerText = "Desconectado";
       document.getElementById("conectadoLabelId").style.color = "red";
+      mostrarMensaje("Conexión fallida");
     };
 
     socket.onmessage = (event) => {
