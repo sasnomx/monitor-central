@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Monitor Sísmico SASNO</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <style>
     html, body, #map {
       height: 100%;
@@ -36,20 +35,11 @@
       border: 2px solid #999;
       text-align: center;
     }
-    #info-disclaimer h5 {
-      margin: 10px 0 4px;
-      font-size: 17px;
-      font-weight: 600;
-    }
-    #info-disclaimer p {
-      margin: 0;
-      font-size: 13px;
-    }
     #conectadoLabelId {
       font-weight: 700;
       font-size: 16px;
-      margin: 5px 0;
       color: red;
+      margin: 5px 0;
     }
     #alerta-texto {
       position: absolute;
@@ -64,148 +54,161 @@
       display: none;
       text-align: center;
     }
+    #autorizar {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 2000;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
 
-  <div class="logo-sasno">
-    <img src="img/sasno.png" alt="Logo SASNO" />
-  </div>
+<div id="map"></div>
 
-  <div id="alerta-texto"></div>
+<div class="logo-sasno">
+  <img src="img/sasno.png" alt="Logo SASNO">
+</div>
 
-  <div id="info-disclaimer">
-    <h6 id="conectadoLabelId">Desconectado</h6>
-    <h5>Monitor del SASNO</h5>
-    <p>©2025 SASNO Versión 1.0</p>
-  </div>
+<div id="alerta-texto"></div>
 
-  <!-- Audios -->
-  <audio id="audioSismo" src="audio/VikingsHorn2.wav" preload="auto"></audio>
-  <audio id="audioTexto" src="audio/ecobeep.wav" preload="auto"></audio>
+<div id="info-disclaimer">
+  <h6 id="conectadoLabelId">Desconectado</h6>
+  <h5>Monitor del SASNO</h5>
+  <p>©2025 SASNO Versión 1.0</p>
+</div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([19.3, -99.2], 7);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 20
-    }).addTo(map);
+<div id="autorizar">Presiona aquí para activar sonido</div>
 
-    const audioSismo = document.getElementById("audioSismo");
-    const audioTexto = document.getElementById("audioTexto");
-    let circulosFijos = [], circulosAnimados = [];
-    let colaAudio = Promise.resolve();
-    let sismoActivo = false;
+<!-- Audios -->
+<audio id="audioSismo" src="audio/VikingsHorn2.wav" preload="auto"></audio>
+<audio id="audioTexto" src="audio/ecobeep.wav" preload="auto"></audio>
 
-    function mostrarMensaje(texto) {
-      const alerta = document.getElementById('alerta-texto');
-      alerta.innerText = texto;
-      alerta.style.display = 'block';
-      setTimeout(() => { alerta.style.display = 'none'; }, 15000);
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([19.3, -99.2], 7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+
+  const audioSismo = document.getElementById("audioSismo");
+  const audioTexto = document.getElementById("audioTexto");
+  let circulosFijos = [], circulosAnimados = [];
+  let colaAudio = Promise.resolve();
+  let sismoActivo = false;
+
+  const botonAutorizar = document.getElementById('autorizar');
+  botonAutorizar.addEventListener('click', async () => {
+    try {
+      await audioTexto.play();
+      audioTexto.pause();
+      audioTexto.currentTime = 0;
+      await audioSismo.play();
+      audioSismo.pause();
+      audioSismo.currentTime = 0;
+      botonAutorizar.style.display = "none";
+    } catch (e) {
+      alert("Activa el sonido manualmente");
     }
+  });
 
-    function mostrarEvento(lat, lng) {
-      if (sismoActivo) return;
-      sismoActivo = true;
-      limpiarEvento();
-      const epicentro = L.latLng(lat, lng);
-      [200000, 150000, 100000, 50000].forEach(r => {
-        const c = L.circle(epicentro, {
-          radius: r,
-          color: '#666',
-          fill: false,
-          weight: 1
-        }).addTo(map);
-        circulosFijos.push(c);
-      });
-      crearCirculoAnimado(epicentro, '#800080', 6.5, 15);
-      crearCirculoAnimado(epicentro, '#e5be01', 3.5, 15);
+  function mostrarMensaje(texto) {
+    const alerta = document.getElementById('alerta-texto');
+    alerta.innerText = texto;
+    alerta.style.display = 'block';
+    setTimeout(() => { alerta.style.display = 'none'; }, 15000);
+  }
 
-      setTimeout(() => { 
-        limpiarEvento();
-        sismoActivo = false;
-      }, 130000 + 5 * 60 * 1000);
-    }
-
-    function crearCirculoAnimado(center, color, velocidad, retraso) {
-      const circulo = L.circle(center, {
-        radius: velocidad * 1000 * retraso,
-        color,
-        weight: 2,
-        fill: false
+  function mostrarEvento(lat, lng) {
+    if (sismoActivo) return;
+    sismoActivo = true;
+    limpiarEvento();
+    const epicentro = L.latLng(lat, lng);
+    [200000, 150000, 100000, 50000].forEach(r => {
+      const c = L.circle(epicentro, {
+        radius: r,
+        color: '#666',
+        fill: false,
+        weight: 1
       }).addTo(map);
-      circulosAnimados.push(circulo);
-      const t0 = performance.now() - retraso * 1000;
-      const duracion = 130000;
-      function animar(t) {
-        const dt = t - t0;
-        if (dt >= duracion) {
-          map.removeLayer(circulo);
-          return;
-        }
-        circulo.setRadius(velocidad * 1000 * dt / 1000);
-        requestAnimationFrame(animar);
+      circulosFijos.push(c);
+    });
+    crearCirculoAnimado(epicentro, '#800080', 6.5, 15);
+    crearCirculoAnimado(epicentro, '#e5be01', 3.5, 15);
+    setTimeout(() => {
+      limpiarEvento();
+      sismoActivo = false;
+    }, 130000 + 5 * 60 * 1000);
+  }
+
+  function crearCirculoAnimado(center, color, velocidad, retraso) {
+    const circulo = L.circle(center, {
+      radius: velocidad * 1000 * retraso,
+      color,
+      weight: 2,
+      fill: false
+    }).addTo(map);
+    circulosAnimados.push(circulo);
+    const t0 = performance.now() - retraso * 1000;
+    const duracion = 130000;
+    function animar(t) {
+      const dt = t - t0;
+      if (dt >= duracion) {
+        map.removeLayer(circulo);
+        return;
       }
+      circulo.setRadius(velocidad * 1000 * dt / 1000);
       requestAnimationFrame(animar);
     }
+    requestAnimationFrame(animar);
+  }
 
-    function limpiarEvento() {
-      circulosFijos.forEach(c => map.removeLayer(c));
-      circulosFijos = [];
-      circulosAnimados.forEach(c => map.removeLayer(c));
-      circulosAnimados = [];
-    }
+  function limpiarEvento() {
+    circulosFijos.forEach(c => map.removeLayer(c));
+    circulosFijos = [];
+    circulosAnimados.forEach(c => map.removeLayer(c));
+    circulosAnimados = [];
+  }
 
-    async function iniciarAudio() {
-      try {
-        await audioTexto.play();
-        audioTexto.pause();
-        audioTexto.currentTime = 0;
-        await audioSismo.play();
-        audioSismo.pause();
-        audioSismo.currentTime = 0;
-      } catch (e) {
-        console.warn("Esperando interacción del usuario para habilitar audio...");
-      }
-    }
+  const socket = new WebSocket("ws://localhost:3000");
 
-    document.addEventListener("click", iniciarAudio, { once: true });
-    document.addEventListener("touchstart", iniciarAudio, { once: true });
+  socket.onopen = () => {
+    document.getElementById("conectadoLabelId").innerText = "Conectado";
+    document.getElementById("conectadoLabelId").style.color = "#25a617";
+    mostrarMensaje("Conexión exitosa al servidor");
+  };
 
-    const socket = new WebSocket("ws://localhost:3000");
+  socket.onerror = () => {
+    document.getElementById("conectadoLabelId").innerText = "Desconectado";
+    document.getElementById("conectadoLabelId").style.color = "red";
+    mostrarMensaje("Conexión fallida");
+  };
 
-    socket.onopen = () => {
-      document.getElementById("conectadoLabelId").innerText = "Conectado";
-      document.getElementById("conectadoLabelId").style.color = "#25a617";
-      mostrarMensaje("Conexión exitosa al servidor");
-    };
-
-    socket.onerror = () => {
-      document.getElementById("conectadoLabelId").innerText = "Desconectado";
-      document.getElementById("conectadoLabelId").style.color = "red";
-      mostrarMensaje("Conexión fallida");
-    };
-
-    socket.onmessage = (event) => {
-      colaAudio = colaAudio.then(async () => {
-        if (event.data.startsWith("SEP:")) {
-          const coords = event.data.replace("SEP:", "").split(",");
-          if (coords.length === 2) {
-            mostrarEvento(parseFloat(coords[0]), parseFloat(coords[1]));
-            audioSismo.currentTime = 0;
-            await audioSismo.play();
-          }
-        } else {
-          mostrarMensaje(event.data);
-          audioTexto.currentTime = 0;
-          await audioTexto.play();
+  socket.onmessage = (event) => {
+    colaAudio = colaAudio.then(async () => {
+      if (event.data.startsWith("SEP:")) {
+        const coords = event.data.replace("SEP:", "").split(",");
+        if (coords.length === 2) {
+          mostrarEvento(parseFloat(coords[0]), parseFloat(coords[1]));
+          audioSismo.currentTime = 0;
+          await audioSismo.play();
         }
-        await new Promise(r => setTimeout(r, 2000));
-      }).catch(console.error);
-    };
-  </script>
+      } else {
+        mostrarMensaje(event.data);
+        audioTexto.currentTime = 0;
+        await audioTexto.play();
+      }
+      await new Promise(r => setTimeout(r, 2000));
+    }).catch(console.error);
+  };
+</script>
 </body>
 </html>
