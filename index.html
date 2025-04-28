@@ -34,7 +34,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       z-index: 999;
       border: 2px solid #999;
-      text-align: center; /* CENTRA EL TEXTO */
+      text-align: center;
     }
     #info-disclaimer h5 {
       margin: 10px 0 4px;
@@ -158,6 +158,22 @@
       circulosAnimados.forEach(c => map.removeLayer(c));
       circulosAnimados = [];
     }
+
+    async function iniciarAudio() {
+      try {
+        await audioTexto.play();
+        audioTexto.pause();
+        audioTexto.currentTime = 0;
+        await audioSismo.play();
+        audioSismo.pause();
+        audioSismo.currentTime = 0;
+      } catch (e) {
+        console.warn("Esperando interacción del usuario para habilitar audio...");
+      }
+    }
+
+    document.addEventListener("click", iniciarAudio, { once: true });
+    document.addEventListener("touchstart", iniciarAudio, { once: true });
 
     const socket = new WebSocket("ws://localhost:3000");
 
