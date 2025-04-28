@@ -8,45 +8,112 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     html, body, #map {
-      height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+      height: 100%;
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
     }
     .logo-sasno {
-      position: absolute; top: 20px; left: 20px; z-index: 999;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
     }
-    .logo-sasno img { width: 250px; height: auto; }
+    .logo-sasno img {
+      width: 250px;
+      height: auto;
+    }
     #anticipacionBox {
-      font-size: 13px; background: #fff; border-radius: 15px; z-index: 999;
-      position: absolute; top: 10px; right: 10px; width: 380px; overflow: hidden;
-      color: #000; box-shadow: 0 0 12px rgba(0,0,0,0.3); border: 1px solid #ccc;
+      font-size: 13px;
+      background: #fff;
+      border-radius: 15px;
+      z-index: 999;
+      position: absolute;
+      top: 10px;
+      right: 300px;
+      width: 380px;
+      overflow: hidden;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      border: 1px solid #ccc;
     }
     .anticipacion-header {
-      font-weight: bold; text-align: center; font-size: 20px;
-      padding: 12px; border-bottom: 1px solid #ccc; background: #f5f5f5;
+      font-weight: bold;
+      text-align: center;
+      font-size: 20px;
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+      background: #f5f5f5;
     }
-    .anticipacion-table { display: flex; flex-direction: row; justify-content: space-between; padding: 10px 20px; }
-    .anticipacion-table .col { flex: 1; }
-    .anticipacion-table ul { list-style: none; padding: 0; margin: 0; }
+    .anticipacion-table {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 10px 20px;
+    }
+    .anticipacion-table .col {
+      flex: 1;
+    }
+    .anticipacion-table ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
     .anticipacion-table li {
-      padding: 4px 0; border-bottom: 1px solid #eee; font-size: 14px; display: flex; justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
     }
     #info-disclaimer {
-      position: absolute; bottom: 26px; left: 10px; font-size: 14px;
-      background: rgba(255, 255, 255, 0.95); padding: 14px 18px; border-radius: 14px;
-      font-family: 'Montserrat', sans-serif; box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      z-index: 999; border: 2px solid #999;
+      position: absolute;
+      bottom: 26px;
+      left: 10px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-family: 'Montserrat', sans-serif;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 999;
+      border: 2px solid #999;
     }
-    #info-disclaimer h5 { margin: 10px 0 4px; font-size: 17px; font-weight: 600; }
-    #info-disclaimer p { margin: 0; font-size: 13px; }
-    #signal { display: flex; align-items: center; gap: 10px; }
-    #conectadoLabelId { font-weight: 700; font-size: 15px; color: red; }
-    #labelDiferenciaServId { font-size: 13px; margin-left: 10px; }
+    #info-disclaimer h5 {
+      margin: 10px 0 4px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+    #info-disclaimer p {
+      margin: 0;
+      font-size: 13px;
+    }
+    #signal {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #conectadoLabelId {
+      font-weight: 700;
+      font-size: 15px;
+      color: red;
+    }
     svg circle {
-      stroke: #660000; stroke-width: 2; fill: #cc0000; fill-opacity: 0.8;
+      stroke: #660000;
+      stroke-width: 2;
+      fill: #cc0000;
+      fill-opacity: 0.8;
     }
     #alerta-texto {
-      position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-      z-index: 1000; font-size: 28px; font-weight: bold; font-family: 'Montserrat', sans-serif;
-      color: black; display: none;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      font-size: 28px;
+      font-weight: bold;
+      font-family: 'Montserrat', sans-serif;
+      color: black;
+      display: none;
     }
   </style>
 </head>
@@ -62,8 +129,12 @@
   <div id="anticipacionBox" style="display: none;">
     <div class="anticipacion-header" id="anticipacionHeader">¡Sismo en progreso!</div>
     <div class="anticipacion-table">
-      <div class="col"><ul id="ciudadesList"></ul></div>
-      <div class="col"><ul id="tiemposList"></ul></div>
+      <div class="col">
+        <ul id="ciudadesList"></ul>
+      </div>
+      <div class="col">
+        <ul id="tiemposList"></ul>
+      </div>
     </div>
   </div>
 
@@ -73,26 +144,45 @@
         <circle id="circleEstado" cx="16" cy="16" r="8"></circle>
       </svg>
       <h6 id="conectadoLabelId">Desconectado</h6>
-      <p id="labelDiferenciaServId">[---]</p>
+      <p id="labelDiferenciaServId" style="margin:0; font-size:13px;">[---]</p>
     </div>
     <h5>Monitor del SASNO</h5>
     <p>©2025 SASNO Versión 1.0</p>
   </div>
 
+  <!-- Audios -->
+  <audio id="audioSismo" src="audio/VikingsHorn2.wav" preload="auto"></audio>
+  <audio id="audioTexto" src="audio/ecobeep.wav" preload="auto"></audio>
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     const map = L.map('map').setView([19.3, -99.2], 7);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(map);
 
+    const audioSismo = document.getElementById("audioSismo");
+    const audioTexto = document.getElementById("audioTexto");
+
     const ciudades = {
-      "Ciudad de México": [19.4326, -99.1332], "Oaxaca": [17.0732, -96.7266], "Acapulco": [16.8531, -99.8237],
-      "Chilpancingo": [17.5506, -99.5058], "Morelia": [19.7008, -101.186], "Puebla": [19.0414, -98.2063],
-      "Cuernavaca": [18.9242, -99.2216], "Colima": [19.2433, -103.725], "Toluca": [19.2826, -99.6557]
+      "Ciudad de México": [19.4326, -99.1332],
+      "Oaxaca": [17.0732, -96.7266],
+      "Acapulco": [16.8531, -99.8237],
+      "Chilpancingo": [17.5506, -99.5058],
+      "Morelia": [19.7008, -101.186],
+      "Puebla": [19.0414, -98.2063],
+      "Cuernavaca": [18.9242, -99.2216],
+      "Colima": [19.2433, -103.725],
+      "Toluca": [19.2826, -99.6557]
     };
 
-    let circulosFijos = [], circulosAnimados = [], anticipacionTimeout = null, sismoActivo = false, pingTimestamp = null;
+    let circulosFijos = [];
+    let circulosAnimados = [];
+    let anticipacionTimeout = null;
+    let sismoActivo = false;
+    let colaAudio = Promise.resolve();
 
     function mostrarMensaje(texto) {
       const alerta = document.getElementById('alerta-texto');
@@ -106,10 +196,17 @@
       sismoActivo = true;
       limpiarEvento();
       const epicentro = L.latLng(lat, lng);
+
       [200000, 150000, 100000, 50000].forEach(r => {
-        const c = L.circle(epicentro, { radius: r, color: '#666', fill: false, weight: 1 }).addTo(map);
+        const c = L.circle(epicentro, {
+          radius: r,
+          color: '#666',
+          fill: false,
+          weight: 1
+        }).addTo(map);
         circulosFijos.push(c);
       });
+
       crearCirculoAnimado(epicentro, '#800080', 6.5, 15);
       crearCirculoAnimado(epicentro, '#e5be01', 3.5, 15);
       mostrarAnticipacion(epicentro);
@@ -117,12 +214,23 @@
     }
 
     function crearCirculoAnimado(center, color, velocidad, retraso) {
-      const circulo = L.circle(center, { radius: velocidad * 1000 * retraso, color, weight: 2, fill: false }).addTo(map);
+      const circulo = L.circle(center, {
+        radius: velocidad * 1000 * retraso,
+        color,
+        weight: 2,
+        fill: false
+      }).addTo(map);
       circulosAnimados.push(circulo);
+
       const t0 = performance.now() - retraso * 1000;
+      const duracion = 130000;
+
       function animar(t) {
         const dt = t - t0;
-        if (dt >= 130000) { map.removeLayer(circulo); return; }
+        if (dt >= duracion) {
+          map.removeLayer(circulo);
+          return;
+        }
         circulo.setRadius(velocidad * 1000 * dt / 1000);
         requestAnimationFrame(animar);
       }
@@ -132,19 +240,29 @@
     function mostrarAnticipacion(epicentro) {
       document.getElementById('anticipacionHeader').innerText = '¡Sismo en progreso!';
       document.getElementById('anticipacionBox').style.display = 'block';
+
       const listaCiudades = document.getElementById('ciudadesList');
       const listaTiempos = document.getElementById('tiemposList');
       listaCiudades.innerHTML = '';
       listaTiempos.innerHTML = '';
+
       for (const [ciudad, coord] of Object.entries(ciudades)) {
         const distancia = epicentro.distanceTo(coord);
         const segundos = Math.max(0, Math.round(distancia / 3500) - 15);
         listaCiudades.innerHTML += `<li>${ciudad}</li>`;
         listaTiempos.innerHTML += `<li>${segundos}s</li>`;
       }
+
       clearTimeout(anticipacionTimeout);
-      anticipacionTimeout = setTimeout(() => { limpiarEvento(true); sismoActivo = false; }, 130000 + 5 * 60 * 1000);
-      setTimeout(() => { document.getElementById('anticipacionHeader').innerText = 'Sismo finalizado'; mostrarMensaje('Sismo Finalizado'); }, 130000);
+      anticipacionTimeout = setTimeout(() => {
+        limpiarEvento(true);
+        sismoActivo = false;
+      }, 130000 + 5 * 60 * 1000);
+
+      setTimeout(() => {
+        document.getElementById('anticipacionHeader').innerText = 'Sismo finalizado';
+        mostrarMensaje('Sismo Finalizado');
+      }, 130000);
     }
 
     function limpiarEvento(tambienOcultarTabla = false) {
@@ -152,7 +270,9 @@
       circulosFijos = [];
       circulosAnimados.forEach(c => map.removeLayer(c));
       circulosAnimados = [];
-      if (tambienOcultarTabla) document.getElementById('anticipacionBox').style.display = 'none';
+      if (tambienOcultarTabla) {
+        document.getElementById('anticipacionBox').style.display = 'none';
+      }
     }
 
     const socket = new WebSocket("ws://localhost:3000");
@@ -160,33 +280,32 @@
     socket.onopen = () => {
       document.getElementById("conectadoLabelId").innerText = "Conectado";
       document.getElementById("conectadoLabelId").style.color = "#25a617";
-      document.getElementById("circleEstado").setAttribute("fill", "#25a617");
+      document.getElementById("circleEstado").style.fill = "#25a617";
       mostrarMensaje("Conexión exitosa al servidor");
-      setInterval(() => { socket.send("PING"); pingTimestamp = Date.now(); }, 5000);
     };
 
-    socket.onclose = () => {
+    socket.onerror = () => {
       document.getElementById("conectadoLabelId").innerText = "Desconectado";
       document.getElementById("conectadoLabelId").style.color = "red";
-      document.getElementById("circleEstado").setAttribute("fill", "#cc0000");
-      document.getElementById("labelDiferenciaServId").innerText = "[---]";
+      document.getElementById("circleEstado").style.fill = "#cc0000";
+      mostrarMensaje("Conexión fallida");
     };
 
     socket.onmessage = (event) => {
-      const data = event.data.trim();
-      if (data === "PONG") {
-        const dif = Date.now() - pingTimestamp;
-        document.getElementById("labelDiferenciaServId").innerText = `[${dif} ms]`;
-        return;
-      }
-      if (data.startsWith("SEP:")) {
-        const coords = data.replace("SEP:", "").split(",");
-        const lat = parseFloat(coords[0]);
-        const lng = parseFloat(coords[1]);
-        if (!isNaN(lat) && !isNaN(lng)) mostrarEvento(lat, lng);
-      } else if (data.startsWith("SERVTEXT:")) {
-        mostrarMensaje(data.replace("SERVTEXT:", "").trim());
-      }
+      colaAudio = colaAudio.then(async () => {
+        if (event.data.startsWith("SEP:")) {
+          const coords = event.data.replace("SEP:", "").split(",");
+          if (coords.length === 2) {
+            mostrarEvento(parseFloat(coords[0]), parseFloat(coords[1]));
+            audioSismo.currentTime = 0;
+            await audioSismo.play();
+          }
+        } else {
+          audioTexto.currentTime = 0;
+          await audioTexto.play();
+        }
+        await new Promise(r => setTimeout(r, 2000));
+      }).catch(console.error);
     };
   </script>
 </body>
