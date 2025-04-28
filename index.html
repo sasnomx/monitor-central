@@ -118,30 +118,24 @@
     <img src="img/sasno.png" alt="Logo SASNO" />
   </div>
 
-  <div id="alerta-texto">¡Sismo en Progreso!</div>
+  <div id="alerta-texto"></div>
 
   <div id="anticipacionBox" style="display: none;">
     <div class="anticipacion-header" id="anticipacionHeader">¡Sismo en progreso!</div>
     <div class="anticipacion-table">
-      <div class="col">
-        <ul id="ciudadesList"></ul>
-      </div>
-      <div class="col">
-        <ul id="tiemposList"></ul>
-      </div>
+      <div class="col"><ul id="ciudadesList"></ul></div>
+      <div class="col"><ul id="tiemposList"></ul></div>
     </div>
   </div>
 
   <div id="info-disclaimer">
     <div id="signal">
       <h6 id="conectadoLabelId">Desconectado</h6>
-      <p id="labelDiferenciaServId" style="margin:0; font-size:13px;">[---]</p>
     </div>
     <h5>Monitor del SASNO</h5>
     <p>©2025 SASNO Versión 1.0</p>
   </div>
 
-  <!-- Audios -->
   <audio id="audioSismo" src="audio/VikingsHorn2.wav" preload="auto"></audio>
   <audio id="audioTexto" src="audio/ecobeep.wav" preload="auto"></audio>
 
@@ -156,6 +150,10 @@
 
     const audioSismo = document.getElementById("audioSismo");
     const audioTexto = document.getElementById("audioTexto");
+    let colaAudio = Promise.resolve();
+    let circulosFijos = [], circulosAnimados = [];
+    let sismoActivo = false;
+    let anticipacionTimeout = null;
 
     const ciudades = {
       "Ciudad de México": [19.4326, -99.1332],
@@ -169,12 +167,6 @@
       "Toluca": [19.2826, -99.6557]
     };
 
-    let circulosFijos = [];
-    let circulosAnimados = [];
-    let anticipacionTimeout = null;
-    let sismoActivo = false;
-    let colaAudio = Promise.resolve();
-
     function mostrarMensaje(texto) {
       const alerta = document.getElementById('alerta-texto');
       alerta.innerText = texto;
@@ -187,7 +179,6 @@
       sismoActivo = true;
       limpiarEvento();
       const epicentro = L.latLng(lat, lng);
-
       [200000, 150000, 100000, 50000].forEach(r => {
         const c = L.circle(epicentro, {
           radius: r,
@@ -197,7 +188,6 @@
         }).addTo(map);
         circulosFijos.push(c);
       });
-
       crearCirculoAnimado(epicentro, '#800080', 6.5, 15);
       crearCirculoAnimado(epicentro, '#e5be01', 3.5, 15);
       mostrarAnticipacion(epicentro);
@@ -212,10 +202,8 @@
         fill: false
       }).addTo(map);
       circulosAnimados.push(circulo);
-
       const t0 = performance.now() - retraso * 1000;
       const duracion = 130000;
-
       function animar(t) {
         const dt = t - t0;
         if (dt >= duracion) {
@@ -231,25 +219,21 @@
     function mostrarAnticipacion(epicentro) {
       document.getElementById('anticipacionHeader').innerText = '¡Sismo en progreso!';
       document.getElementById('anticipacionBox').style.display = 'block';
-
       const listaCiudades = document.getElementById('ciudadesList');
       const listaTiempos = document.getElementById('tiemposList');
       listaCiudades.innerHTML = '';
       listaTiempos.innerHTML = '';
-
       for (const [ciudad, coord] of Object.entries(ciudades)) {
         const distancia = epicentro.distanceTo(coord);
         const segundos = Math.max(0, Math.round(distancia / 3500) - 15);
         listaCiudades.innerHTML += `<li>${ciudad}</li>`;
         listaTiempos.innerHTML += `<li>${segundos}s</li>`;
       }
-
       clearTimeout(anticipacionTimeout);
       anticipacionTimeout = setTimeout(() => {
         limpiarEvento(true);
         sismoActivo = false;
       }, 130000 + 5 * 60 * 1000);
-
       setTimeout(() => {
         document.getElementById('anticipacionHeader').innerText = 'Sismo finalizado';
         mostrarMensaje('Sismo Finalizado');
@@ -271,13 +255,11 @@
     socket.onopen = () => {
       document.getElementById("conectadoLabelId").innerText = "Conectado";
       document.getElementById("conectadoLabelId").style.color = "#25a617";
-      mostrarMensaje("Conexión exitosa al servidor");
     };
 
     socket.onerror = () => {
       document.getElementById("conectadoLabelId").innerText = "Desconectado";
       document.getElementById("conectadoLabelId").style.color = "red";
-      mostrarMensaje("Conexión fallida");
     };
 
     socket.onmessage = (event) => {
@@ -290,6 +272,7 @@
             await audioSismo.play();
           }
         } else {
+          mostrarMensaje(event.data);
           audioTexto.currentTime = 0;
           await audioTexto.play();
         }
