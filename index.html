@@ -178,7 +178,7 @@
     circulosAnimados = [];
   }
 
-  const socket = new WebSocket("http://189.132.10.121:3000/");
+  const socket = new WebSocket("ws://189.132.10.121:3000/");
 
   socket.onopen = () => {
     document.getElementById("conectadoLabelId").innerText = "Conectado";
