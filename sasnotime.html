@@ -66,6 +66,11 @@
       cursor: pointer;
       z-index: 2000;
     }
+    #horaActual {
+      margin-top: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -81,7 +86,7 @@
 <div id="info-disclaimer">
   <h6 id="conectadoLabelId">Desconectado</h6>
   <h5>Monitor del SASNO</h5>
-  <p id="horaActual" style="margin:5px 0;">--:--:--</p> <!-- AQUI LA HORA -->
+  <div id="horaActual">--:--:--</div>
   <p>©2025 SASNO Versión 1.0</p>
 </div>
 
@@ -105,6 +110,7 @@
   let circulosFijos = [], circulosAnimados = [];
   let colaAudio = Promise.resolve();
   let sismoActivo = false;
+  let audioAutorizado = false;
 
   const botonAutorizar = document.getElementById('autorizar');
   botonAutorizar.addEventListener('click', async () => {
@@ -112,12 +118,16 @@
       await audioTexto.play();
       audioTexto.pause();
       audioTexto.currentTime = 0;
+
       await audioSismo.play();
       audioSismo.pause();
       audioSismo.currentTime = 0;
+
+      audioAutorizado = true;
       botonAutorizar.style.display = "none";
+      console.log("✅ Audio autorizado");
     } catch (e) {
-      alert("Activa el sonido manualmente");
+      alert("⚠️ Activa el sonido manualmente");
     }
   });
 
@@ -179,6 +189,14 @@
     circulosAnimados = [];
   }
 
+  function actualizarHora() {
+    const ahora = new Date();
+    const hora = ahora.toLocaleTimeString('es-MX', { hour12: false });
+    document.getElementById("horaActual").innerText = hora;
+  }
+  setInterval(actualizarHora, 1000);
+  actualizarHora();
+
   const socket = new WebSocket("ws://189.132.10.121:3000");
 
   socket.onopen = () => {
@@ -195,6 +213,8 @@
 
   socket.onmessage = (event) => {
     colaAudio = colaAudio.then(async () => {
+      if (!audioAutorizado) return;
+
       if (event.data.startsWith("SEP:")) {
         const coords = event.data.replace("SEP:", "").split(",");
         if (coords.length === 2) {
@@ -210,17 +230,6 @@
       await new Promise(r => setTimeout(r, 2000));
     }).catch(console.error);
   };
-
-  // ======= HORA EN TIEMPO REAL =======
-  function actualizarHora() {
-    const ahora = new Date();
-    const horas = String(ahora.getHours()).padStart(2, '0');
-    const minutos = String(ahora.getMinutes()).padStart(2, '0');
-    const segundos = String(ahora.getSeconds()).padStart(2, '0');
-    document.getElementById('horaActual').innerText = `${horas}:${minutos}:${segundos}`;
-  }
-  setInterval(actualizarHora, 1000);
-  actualizarHora();
 </script>
 </body>
 </html>
