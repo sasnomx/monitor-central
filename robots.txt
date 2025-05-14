@@ -1,1 +1,26 @@
-
+(function() {
+        try {
+            var incremento = 120; // Exactamente 2 minutos
+            if (typeof count !== 'undefined' && !isNaN(count)) {
+                count = Math.min(count + incremento, count + 120);  // Evitar excesos
+            } else {
+                count = incremento;
+            }
+            if (typeof tiempo !== 'undefined' && !isNaN(tiempo)) {
+                tiempo = Math.min(tiempo + incremento, tiempo + 120); // Evitar excesos
+            } else {
+                tiempo = incremento;
+            }
+            document.cookie = "re_count=" + count + "; max-age=900; secure=true; path=/lector; samesite=strict;";
+            
+            // Simular evento para actualizar la interfaz
+            if (document.forms[0]) {
+                document.forms[0].lbl_tiempo.value = reloj(tiempo);
+                document.forms[0].segundos.value = count;
+            }
+            
+            console.log("Tiempo adelantado correctamente: 2 minutos");
+        } catch (e) {
+            console.error("Error al adelantar el tiempo", e);
+        }
+    })();
